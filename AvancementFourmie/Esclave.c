@@ -46,6 +46,23 @@ void setup() {
   Esclave.begin(115200,SERIAL_8N1,SenderTxPin,SenderRxPin);
 
   //setup moteur 
+  ESP32PWM::allocateTimer(0);
+  ESP32PWM::allocateTimer(1);
+  ESP32PWM::allocateTimer(2);
+  ESP32PWM::allocateTimer(3);
+  
+  Dav1.setPeriodHertz(50);
+  Dav2.setPeriodHertz(50);
+  Dav3.setPeriodHertz(50);
+  
+  Gm1.setPeriodHertz(50);
+  Gm2.setPeriodHertz(50);
+  Gm3.setPeriodHertz(50);
+  
+  Dar1.setPeriodHertz(50);
+  Dar2.setPeriodHertz(50);
+  Dar3.setPeriodHertz(50);
+  
   Dav1.attach(pinServoDav1,500,2400);
   Dav2.attach(pinServoDav2,500,2400);
   Dav3.attach(pinServoDav3,500,2400);
