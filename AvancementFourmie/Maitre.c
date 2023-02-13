@@ -63,8 +63,25 @@ void setup() {
 
   // Démarrage du bluetooth
   SerialBT.begin(deviceName);
-
+  
   //Initialise les servomoteurs :
+  ESP32PWM::allocateTimer(0);
+  ESP32PWM::allocateTimer(1);
+  ESP32PWM::allocateTimer(2);
+  ESP32PWM::allocateTimer(3);
+  
+  Gav1.setPeriodHertz(30);
+  Gav2.setPeriodHertz(30);
+  Gav3.setPeriodHertz(30);
+  
+  Dm1.setPeriodHertz(30);
+  Dm2.setPeriodHertz(30);
+  Dm3.setPeriodHertz(30);
+  
+  Gar1.setPeriodHertz(30);
+  Gar2.setPeriodHertz(30);
+  Gar3.setPeriodHertz(30);
+  
   Gav1.attach(pinServoGav1, 500, 2400);
   Gav2.attach(pinServoGav2, 500, 2400);
   Gav3.attach(pinServoGav3, 500, 2400);
