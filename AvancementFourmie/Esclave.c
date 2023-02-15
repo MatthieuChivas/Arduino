@@ -6,8 +6,8 @@ HardwareSerial Esclave(1);
 Servo Dav1;
 Servo Dav2;
 Servo Dav3;
-
-Servo Gm1;
+// TEST modification
+Servo Gm5;
 Servo Gm2;
 Servo Gm3;
 
