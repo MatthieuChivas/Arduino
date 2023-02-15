@@ -81,7 +81,7 @@ void setup() {
 
 void loop() {
   while(Esclave.available()){
-    recu = Esclave.readString();
+    recu = Esclave.readStringUntil('0');
     Serial.print(recu);
   
     if(recu=="avancer"){
