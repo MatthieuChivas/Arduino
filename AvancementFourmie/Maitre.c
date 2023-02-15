@@ -112,7 +112,8 @@ void loop() {
       avancerG();
       Serial.println("Avancer Gauche");
     } else {
-      Maitre.print("avancer");
+      //0 est le caractère d'arrêt
+      Maitre.print("avancer0");
       avancerG();
       Serial.println("Avancer Droite et gauche");
     }
