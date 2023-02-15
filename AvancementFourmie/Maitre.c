@@ -1,13 +1,13 @@
 //Serveur Bluetooth Fourmi
 #include "BluetoothSerial.h"
-#include "esp_bt_device.h"
-#include <ESP32Servo.h>
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
 #endif
+#include <ESP32Servo.h>
 
 BluetoothSerial SerialBT;
 const String deviceName = "Fourmi";
+String blueetoothSendMsg;
 
 //setup le port 2 comme maitre (envoyer des informations)
 HardwareSerial Maitre(2);
@@ -30,13 +30,13 @@ Servo Gar3;
 #define pinServoGav2 16
 #define pinServoGav3 17
 
-#define pinServoDm1 5
-#define pinServoDm2 17
-#define pinServoDm3 16
+#define pinServoDm1 25
+#define pinServoDm2 33
+#define pinServoDm3 32
 
-#define pinServoGar1 27
-#define pinServoGar2 14
-#define pinServoGar3 12
+#define pinServoGar1 5
+#define pinServoGar2 18
+#define pinServoGar3 19
 
 //define les Pin qu'on va utilier pour transmettre des informations
 //Tx : transmetteur doit être branché sur un receveur de l'autre ESP32
@@ -51,7 +51,7 @@ int indiceGauch3 = 0;
 int indiceGauch4 = 0;
 
 int avancerD = 0;
-int vitesse = 30;
+int vitesse = 60;
 
 void setup() {
   //initialise console
@@ -98,19 +98,23 @@ void setup() {
 
 
 void loop() {
-  String blueetoothSendMsg;
   if (SerialBT.available()) {
     blueetoothSendMsg = SerialBT.readString();
     blueetoothSendMsg.trim();
+    Serial.print("Bluetooth : ");
+    Serial.println(blueetoothSendMsg);
   }
+
 
   if (blueetoothSendMsg == "avancer") {
     //tu codes en else if car l'avancement se fait petit pas par petit pas la boucle utilise le boucle du programme principal
     if (!avancerD) {
       avancerG();
+      Serial.println("Avancer Gauche");
     } else {
       Maitre.print("avancer");
       avancerG();
+      Serial.println("Avancer Droite et gauche");
     }
   }
 
@@ -152,6 +156,7 @@ void moveLegGav() {
   }
   // Reset the counters for repeating the process
   if (indiceGauch4 >= 30) {
+    Serial.println("Premier cycle fini");
     indiceGauch1 = 0;
     indiceGauch2 = 0;
     indiceGauch3 = 0;
@@ -193,7 +198,7 @@ void moveLegDm() {
 
   //rotate ++
   if (indiceGauch2 <= 30) {
-    Dm1.write(30 + indiceGauch2);
+    Dm1.write(90 + indiceGauch2);
   }
 
   //bas
@@ -204,6 +209,6 @@ void moveLegDm() {
 
   //rotate --
   if (indiceGauch2 >= 30) {
-    Dm1.write(60 - indiceGauch4);
+    Dm1.write(120 - indiceGauch4);
   }
 }
