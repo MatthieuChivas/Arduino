@@ -16,17 +16,17 @@ Servo Dar2;
 Servo Dar3;
 
 //Mise en place servo moteur GM/DAV/DAR
-#define pinServoDav1 7
-#define pinServoDav2 8
-#define pinServoDav3 9
+#define pinServoDav1 25
+#define pinServoDav2 33
+#define pinServoDav3 32
 
-#define pinServoGm1 4
-#define pinServoGm2 5
-#define pinServoGm3 6
+#define pinServoGm1 5
+#define pinServoGm2 18
+#define pinServoGm3 19
 
-#define pinServoDar1 10
-#define pinServoDar2 11
-#define pinServoDar3 12
+#define pinServoDar1 4
+#define pinServoDar2 2
+#define pinServoDar3 15
 
 // put your setup code here, to run once:
 #define SenderTxPin 22
