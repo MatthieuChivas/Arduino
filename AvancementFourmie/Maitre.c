@@ -27,15 +27,15 @@ Servo Gar3;
 
 //Mise en place servo moteur GAV/GARR/DM1
 #define pinServoGav1 4
-#define pinServoGav2 5
-#define pinServoGav3 6
+#define pinServoGav2 16
+#define pinServoGav3 17
 
-#define pinServoDm1 7
-#define pinServoDm2 8
-#define pinServoDm3 9
+#define pinServoDm1 5
+#define pinServoDm2 17
+#define pinServoDm3 16
 
-#define pinServoGar1 10
-#define pinServoGar2 11
+#define pinServoGar1 27
+#define pinServoGar2 14
 #define pinServoGar3 12
 
 //define les Pin qu'on va utilier pour transmettre des informations
