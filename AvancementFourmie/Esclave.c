@@ -16,13 +16,13 @@ Servo Dar2;
 Servo Dar3;
 
 //Mise en place servo moteur GM/DAV/DAR
-#define pinServoDav1 25
-#define pinServoDav2 33
-#define pinServoDav3 32
+#define pinServoDav1 5
+#define pinServoDav2 17
+#define pinServoDav3 16
 
-#define pinServoGm1 5
-#define pinServoGm2 18
-#define pinServoGm3 19
+#define pinServoGm1 27
+#define pinServoGm2 14
+#define pinServoGm3 12
 
 #define pinServoDar1 4
 #define pinServoDar2 2
@@ -38,7 +38,9 @@ int indiceDroit2 = 0;
 int indiceDroit3 = 0;
 int indiceDroit4 = 0;
 
-int vitesse=30;
+int vitesse=60;
+
+String recu;
 
 void setup() {
   Serial.begin(115200);
@@ -79,7 +81,7 @@ void setup() {
 
 void loop() {
   while(Esclave.available()){
-    String recu = Esclave.readString();
+    recu = Esclave.readString();
     Serial.print(recu);
   
     if(recu=="avancer"){
@@ -99,7 +101,7 @@ void loop() {
     }
     delay(vitesse);
   }
-  Serial.println("Pas de connexion...");
+
 }
 
 //C'est cette patte qui donne le rythme
@@ -185,4 +187,3 @@ void moveLegGm() {
     Gm1.write(60 - indiceDroit4);
   }
 }
-
