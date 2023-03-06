@@ -70,9 +70,6 @@ int test=0;
 
 
 
-
-
-
 void setup() {
   //initialise console
   Serial.begin(115200);
@@ -144,8 +141,7 @@ void loop() {
   }
 
   
-blueetoothSendMsg = "avancer";
-
+blueetoothSendMsg = "avancer";      // Pour les tests, on fait comme si la fourmi recevoit toujours la commande "avancer"
 
 
 
@@ -155,7 +151,9 @@ blueetoothSendMsg = "avancer";
       avancerG();
       Serial.println("Avancer Gauche");
     } else {
-      Maitre.print("avancer;");     // Envoyer commande avec ; à la fin
+
+      Maitre.print("avancer;");     // Envoyer commande avec ; à la fin (caractère d'arrêt)
+
       avancerG();
       Serial.println("Avancer Droite et gauche");
     }
@@ -202,6 +200,7 @@ void moveLegGav() {
   
   // Reset the counters for repeating the process
   if (indiceGauch4 >= 30) {
+    Serial.println("Premier cycle fini");
     indiceGauch1 = 0;
     indiceGauch2 = 0;
     indiceGauch3 = 0;
@@ -245,6 +244,7 @@ void moveLegDm() {
   //rotate ++
   if (indiceGauch2 <= 30) {
     Dm1.write(posBaseDm1 - indiceGauch2);
+
   }
 
   //bas

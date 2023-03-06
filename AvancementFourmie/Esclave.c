@@ -39,6 +39,7 @@ int indiceDroit2 = 0;
 int indiceDroit3 = 0;
 int indiceDroit4 = 0;
 
+
 int vitesse=90;
 
   int posBaseDav1=90;
@@ -108,6 +109,7 @@ void setup() {
 void loop() {
 
   while(Esclave.available()){
+
     recu = Esclave.readStringUntil(';');
     Serial.println(recu);
   
