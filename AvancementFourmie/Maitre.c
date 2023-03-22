@@ -159,10 +159,41 @@ void loop() {
       Serial.println("Avancer Droite et gauche");
     }
   }
+  if (blueetoothSendMsg == "reculer "){
+    reculerG();
+  }
+  if (blueetoothSendMsg=="tournerD"){
+    tournerDG();
+  }
+  if (blueetoothSendMsg=="tournerG"){
+    tournerGG();
+  }
+  if (blueetoothSendMsg=="teteHaute"){
+    
+  }
 
   delay(vitesse);
 }
 
+//---- CODE pour tourner à gauche des pattes "gauches" ----//
+void tournerGG(){
+
+}
+
+//---- CODE pour tourner à droite des pattes "gauches" ----//
+void tournerDG(){
+
+}
+
+
+//---- CODE pour reculer des pattes "gauches" -----//
+void reculerG(){
+
+}
+
+
+
+// ----- CODE pour avancer des pates "gauches" ----//
 void avancerG() {
   
   moveLegGav();
