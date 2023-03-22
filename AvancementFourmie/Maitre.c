@@ -134,6 +134,7 @@ void setup() {
 
 void loop() {
   if (SerialBT.available()) {
+    //ajout d'un commentaire test de github
     blueetoothSendMsg = SerialBT.readString();
     blueetoothSendMsg.trim();
     Serial.print("Bluetooth : ");
@@ -141,7 +142,7 @@ void loop() {
   }
 
   
-blueetoothSendMsg = "avancer";      // Pour les tests, on fait comme si la fourmi recevoit toujours la commande "avancer"
+  blueetoothSendMsg = "avancer";      // Pour les tests, on fait comme si la fourmi recevoit toujours la commande "avancer"
 
 
 
