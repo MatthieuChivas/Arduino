@@ -177,17 +177,17 @@ void loop() {
 
   blueetoothSendMsg = "gauche";      // Pour les tests, on fait comme si la fourmi recevoit toujours la commande "gauche"
 
-  if (blueetoothSendMsg == "gauche") {
+  if (blueetoothSendMsg == "droite") {
     //tu codes en else if car l'avancement se fait petit pas par petit pas la boucle utilise le boucle du programme principal
-    if (!gaucheD) { //le booleen = 0, donc on commence avec la fonction gauche d'abord
-      gaucheG();
-      Serial.println("Tourner a gauche Gauche");
+    if (!droiteD) { //le booleen = 0, donc on commence avec la fonction gauche d'abord
+      droiteG();
+      Serial.println("Tourner a droite Droite");
     } else { // le booleen est maintenant = 1; donc on envoie la commande a l'esclave et on continue notre fonction
 
-      Maitre.print("gauche;");     // Envoyer commande avec ; à la fin (caractère d'arrêt)
+      Maitre.print("droite;");     // Envoyer commande avec ; à la fin (caractère d'arrêt)
 
-      gaucheG();
-      Serial.println("Tourner a gauche");
+      droiteD();
+      Serial.println("Tourner a droite");
     }
   }
 
@@ -195,15 +195,15 @@ void loop() {
 }
 
 
-void gaucheG() {
+void droiteD() {
 
-  moveGLegGav();
-  moveLegDm();  //SAME QUE POUR AVANCER
-  moveGLegGar();
+  moveLegGav();
+  moveDLegDm();  
+  moveLegGar();
 
 }
 
-void moveGLegGav() { //DOUBLON
+void moveLegGav() { //DOUBLON
   // Rise the leg
   if (indiceGauch1 <= 10) {
     Gav3.write(posBaseGav3 + (indiceGauch1 * 2));
@@ -242,7 +242,7 @@ void moveGLegGav() { //DOUBLON
 }
 
 
-void moveLegDm() { // CHANGEE
+void moveDLegDm() { // CHANGEE
   //haut
   if (indiceGauch1 <= 10) {
     Dm3.write(posBaseDm3 - (indiceGauch1 * 2));
@@ -269,7 +269,7 @@ void moveLegDm() { // CHANGEE
 }
 
 
-void moveGLegGar() { //DOUBLON
+void moveLegGar() { //DOUBLON
   //rise leg
   if (indiceGauch1 <= 10) {
     Gar3.write(posBaseGar3 + (indiceGauch1 * 2));
