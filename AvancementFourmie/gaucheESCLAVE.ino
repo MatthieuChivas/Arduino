@@ -114,18 +114,20 @@ void loop() {
   
     if(recu=="avancer"){
       Serial.println("j'avance");
-      moveLegDav(); //SAME QUE POUR AVANCER
-      moveLegDar(); //SAME QUE POUR AVANCER
+      moveLegDav(); 
+      moveLegDar(); 
       moveLegGm();
     }
     else if(recu=="reculer"){
       
     }
-    else if(recu=="tournerD"){
+    else if(recu=="droite"){
       
     }
-    else if(recu=="tournerG"){
-      
+    else if(recu=="gauche"){
+      moveLegDav(); 
+      moveLegDar(); 
+      moveGLegGm();
     }
     delay(vitesse);
   }
@@ -191,7 +193,7 @@ void moveLegDar() { // DOUBLON
   }
 }
 
-void moveLegGm() {
+void moveGLegGm() {
   //haut
   if (indiceDroit1 <= 10) {
     Gm3.write(posBaseGm3 + (indiceDroit1*2));
