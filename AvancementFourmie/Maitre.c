@@ -291,3 +291,7 @@ void moveLegDm() {
     Dm1.write((posBaseDm1-30) + indiceGauch4);  //Dm1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
   }
 }
+
+void tourner(){
+//un code pour tourner
+}
