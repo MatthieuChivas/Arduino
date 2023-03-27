@@ -114,14 +114,17 @@ void loop() {
   
     if(recu=="avancer"){
       Serial.println("j'avance");
-      moveLegDav(); //SAME QUE POUR AVANCER
-      moveLegDar(); //SAME QUE POUR AVANCER
+      moveLegDav(); 
+      moveLegDar(); 
       moveLegGm();
     }
     else if(recu=="reculer"){
-      
+
     }
     else if(recu=="tournerD"){
+      moveDLegDav(); 
+      moveLegGm();
+      moveDLegDar(); 
       
     }
     else if(recu=="tournerG"){
@@ -133,7 +136,7 @@ void loop() {
 }
 
 //C'est cette patte qui donne le rythme
-void moveLegDav(){ // CHANGEE
+void moveDLegDav(){ // CHANGEE
   // Rise the leg
   if (indiceDroit1 <= 10) {
     Dav3.write(posBaseDav3 - (indiceDroit1*2));
@@ -167,7 +170,7 @@ void moveLegDav(){ // CHANGEE
   // Each iteration or step is executed in the main loop section where there is also a delay time for controlling the speed of movement
 }
 
-void moveLegDar() { // CHANGEE
+void moveDLegDar() { // CHANGEE
   //rise leg
   if (indiceDroit1 <= 10) {
     Dar3.write(posBaseDar3 - (indiceDroit1*2));
