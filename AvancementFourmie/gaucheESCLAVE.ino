@@ -39,7 +39,7 @@ int indiceDroit3 = 0;
 int indiceDroit4 = 0;
 
 
-int vitesse=90;
+int vitesse=50;
 
   int posBaseDav1=90;
   int posBaseDav2=35;
