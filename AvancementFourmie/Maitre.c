@@ -25,6 +25,10 @@ Servo Gar1;
 Servo Gar2;
 Servo Gar3;
 
+Servo H1;
+Servo H2;
+Servo H3;
+
 //Mise en place servo moteur GAV/GARR/DM1
 #define pinServoGav1 4
 #define pinServoGav2 16
