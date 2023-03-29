@@ -40,7 +40,7 @@ int indiceDroit3 = 0;
 int indiceDroit4 = 0;
 
 
-int vitesse=50;
+int vitesse=40;
 
   int posBaseDav1=90;
   int posBaseDav2=35;
@@ -157,8 +157,8 @@ void moveLegDav(){
   }
   // Move back to touch the ground
   if (indiceDroit2 > 20 & indiceDroit3 <= 10) {
-    Dav3.write(posBaseDav3 + (indiceDroit3*2));
-    Dav2.write(posBaseDav2 + (indiceDroit3*3));
+    Dav3.write(posBaseDav3-20 + (indiceDroit3*2));
+    Dav2.write(posBaseDav2-30 + (indiceDroit3*3));
     indiceDroit3++;
   }
   // Stance phase - move leg while touching the ground
@@ -191,8 +191,8 @@ void moveLegDar() {
 
   //en bas
   if (indiceDroit2 > 20 & indiceDroit3 <= 10) {
-    Dar3.write(posBaseDar3 + (indiceDroit3*2));
-    Dar2.write(posBaseDar2 + (indiceDroit3*3));
+    Dar3.write(posBaseDar3-20 + (indiceDroit3*2));
+    Dar2.write(posBaseDar2-30 + (indiceDroit3*3));
   }
 
   //rotate vers l'arrière
@@ -216,8 +216,8 @@ void moveLegGm() {
 
   //bas
   if (indiceDroit2 > 20 & indiceDroit3 <= 10) {
-    Gm3.write(posBaseGm3 - (indiceDroit3*2));
-    Gm2.write(posBaseGm2 - (indiceDroit3*3));
+    Gm3.write(posBaseGm3+20 - (indiceDroit3*2));
+    Gm2.write(posBaseGm2+30 - (indiceDroit3*3));
   }
 
   //rotate --
