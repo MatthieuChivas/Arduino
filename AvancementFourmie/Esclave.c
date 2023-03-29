@@ -39,19 +39,19 @@ int indiceDroit3 = 0;
 int indiceDroit4 = 0;
 
 
-int vitesse=90;
+int vitesse=40;
 
-  int posBaseDav1=90;
-  int posBaseDav2=35;
-  int posBaseDav3=15;
+int posBaseDav1=90;
+int posBaseDav2=35;
+int posBaseDav3=15;
   
-  int posBaseGm1=100;
-  int posBaseGm2=150;
-  int posBaseGm3=165;
+int posBaseGm1=100;
+int posBaseGm2=150;
+int posBaseGm3=165;
 
-  int posBaseDar1=110;
-  int posBaseDar2=35;
-  int posBaseDar3=15;
+int posBaseDar1=110;
+int posBaseDar2=35;
+int posBaseDar3=15;
 
 String recu;
 
@@ -148,7 +148,7 @@ void moveLegDav(){
   // Move back to touch the ground
   if (indiceDroit2 > 20 & indiceDroit3 <= 10) {
     Dav3.write(posBaseDav3-20 + (indiceDroit3*2));
-    Dav2.write(posBaseDav2+30 + (indiceDroit3*3));
+    Dav2.write(posBaseDav2-30 + (indiceDroit3*3));
     indiceDroit3++;
   }
   // Stance phase - move leg while touching the ground
@@ -182,7 +182,7 @@ void moveLegDar() {
   //en bas
   if (indiceDroit2 > 20 & indiceDroit3 <= 10) {
     Dar3.write(posBaseDar3-20 + (indiceDroit3*2));
-    Dar2.write(posBaseDar2+30 + (indiceDroit3*3));
+    Dar2.write(posBaseDar2-30 + (indiceDroit3*3));
   }
 
   //rotate vers l'arrière

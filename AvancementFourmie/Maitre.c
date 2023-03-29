@@ -51,20 +51,20 @@ int indiceGauch3 = 0;
 int indiceGauch4 = 0;
 
 int avancerD = 0;
-int vitesse = 90;
+int vitesse = 40;
 
 int test=0;
-  int posBaseGav1=110;
-  int posBaseGav2=145;
-  int posBaseGav3=165;
+int posBaseGav1=110;
+int posBaseGav2=145;
+int posBaseGav3=165;
   
-  int posBaseDm1=95;
-  int posBaseDm2=35;
-  int posBaseDm3=15;
+int posBaseDm1=95;
+int posBaseDm2=35;
+int posBaseDm3=15;
 
-  int posBaseGar1=85;
-  int posBaseGar2=145;
-  int posBaseGar3=165;
+int posBaseGar1=85;
+int posBaseGar2=145;
+int posBaseGar3=165;
 
 //-------------------------Variables Temporaires ci-dessous------------------------
 
