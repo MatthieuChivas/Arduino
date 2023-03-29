@@ -42,6 +42,13 @@ Servo H3;
 #define pinServoGar2 18
 #define pinServoGar3 19
 
+
+//Mise en place servo moteur pour la tête
+#define pinServoH1 2
+#define pinServoH2 15
+#define pinServoH3 13
+
+
 //define les Pin qu'on va utilier pour transmettre des informations
 //Tx : transmetteur doit être branché sur un receveur de l'autre ESP32
 //Rx : receveur doit être branché sur un transmetteur de l'autre ESP32
