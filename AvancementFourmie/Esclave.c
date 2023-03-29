@@ -40,7 +40,7 @@ int indiceDroit3 = 0;
 int indiceDroit4 = 0;
 
 
-int vitesse=90;
+int vitesse=50;
 
   int posBaseDav1=90;
   int posBaseDav2=35;
@@ -120,13 +120,22 @@ void loop() {
       moveLegGm();
     }
     else if(recu=="reculer"){
-      
+      Serial.println("je recule");
+      moveDLegDav(); 
+      moveDLegDar(); 
+      moveGLegGm();
     }
-    else if(recu=="tournerD"){
-      
+    else if(recu=="droite"){
+      Serial.println("je tourne a droite");
+      moveDLegDav(); 
+      moveLegGm();
+      moveDLegDar();
     }
-    else if(recu=="tournerG"){
-      
+    else if(recu=="gauche"){
+      Serial.println("je tourne a gauche");
+      moveLegDav(); 
+      moveLegDar(); 
+      moveGLegGm();
     }
     delay(vitesse);
   }
@@ -214,5 +223,88 @@ void moveLegGm() {
   //rotate --
   if (indiceDroit2 >= 30) {
     Gm1.write((posBaseGm1+30) - indiceDroit4);  //Dm1 est à sa (posBase-30) pcq elle est à la position avancée. On la rétracte vers sa posBase (+30)
+  }
+}
+
+void moveGLegGm() {
+  //haut
+  if (indiceDroit1 <= 10) {
+    Gm3.write(posBaseGm3 + (indiceDroit1*2));
+    Gm2.write(posBaseGm2 + (indiceDroit1*3));
+  }
+
+  //rotate --
+  if (indiceDroit2 <= 30) {
+    Gm1.write(posBaseGm1 - indiceDroit2);
+
+  }
+
+  //bas
+  if (indiceDroit2 > 20 & indiceDroit3 <= 10) {
+    Gm3.write(posBaseGm3+20 - (indiceDroit3 * 2));
+    Gm2.write(posBaseGm2+30 - (indiceDroit3 * 3));
+  }
+
+  //rotate ++
+  if (indiceDroit2 >= 30) {
+    Gm1.write((posBaseGm1-30) + indiceDroit4);  //Dm1 est à sa (posBase-30) pcq elle est à la position avancée. On la rétracte vers sa posBase (+30)
+  }
+}
+
+void moveDLegDav(){
+  // Rise the leg
+  if (indiceDroit1 <= 10) {
+    Dav3.write(posBaseDav3 - (indiceDroit1*2));
+    Dav2.write(posBaseDav2 - (indiceDroit1*3));
+    indiceDroit1++;
+  }
+  // Rotate the leg
+  if (indiceDroit2 <= 30) {
+    Dav1.write(posBaseDav1 + indiceDroit2);
+    indiceDroit2++;
+  }
+  // Move back to touch the ground
+  if (indiceDroit2 > 20 & indiceDroit3 <= 10) {
+    Dav3.write(posBaseDav3-20 + (indiceDroit3*2));
+    Dav2.write(posBaseDav2-30 + (indiceDroit3*3));
+    indiceDroit3++;
+  }
+  // Stance phase - move leg while touching the ground
+  // Rotate back to initial position
+  if (indiceDroit2 >= 30) {
+    Dav1.write((posBaseDav1+30) - indiceDroit4);  //Dav1 est à sa (posBase-30) pcq elle est à la position avancée. On la rétracte vers sa posBase (+30)
+    indiceDroit4++;
+  }
+  // Reset the counters for repeating the process
+  if (indiceDroit4 >= 30) {
+    indiceDroit1 = 0;
+    indiceDroit2 = 0;
+    indiceDroit3 = 0;
+    indiceDroit4 = 0;
+  }
+  // Each iteration or step is executed in the main loop section where there is also a delay time for controlling the speed of movement
+}
+
+void moveDLegDar() {
+  //rise leg
+  if (indiceDroit1 <= 10) {
+    Dar3.write(posBaseDar3 - (indiceDroit1*2));
+    Dar2.write(posBaseDar2 - (indiceDroit1*3));
+  }
+
+  //rotate vers l'avant
+  if (indiceDroit2 <= 30) {
+    Dar1.write(posBaseDar1 + indiceDroit2);
+  }
+
+  //en bas
+  if (indiceDroit2 > 20 & indiceDroit3 <= 10) {
+    Dar3.write(posBaseDar3-20 + (indiceDroit3*2));
+    Dar2.write(posBaseDar2-30 + (indiceDroit3*3));
+  }
+
+  //rotate vers l'arrière
+  if (indiceDroit2 >= 30) {
+    Dar1.write((posBaseDar1+30) - indiceDroit4);  //Gar1 est à sa (posBase-30) pcq elle est à la position avancée. On la rétracte vers sa posBase (+30)
   }
 }
