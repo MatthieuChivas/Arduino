@@ -217,8 +217,8 @@ void moveGLegGav() {
   }
   // Move back to touch the ground
   if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
-    Gav3.write(posBaseGav3 - (indiceGauch3 * 2));
-    Gav2.write(posBaseGav2 - (indiceGauch3 * 3));
+    Gav3.write(posBaseGav3+20 - (indiceGauch3 * 2));
+    Gav2.write(posBaseGav2+30 - (indiceGauch3 * 3));
     indiceGauch3++;
   }
   // Stance phase - move leg while touching the ground
@@ -257,8 +257,8 @@ void moveLegDm() { // DOUBLON
 
   //bas
   if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
-    Dm3.write(posBaseDm3 + (indiceGauch3 * 2));
-    Dm2.write(posBaseDm2 + (indiceGauch3 * 3));
+    Dm3.write(posBaseDm3-20 + (indiceGauch3 * 2));
+    Dm2.write(posBaseDm2-30 + (indiceGauch3 * 3));
     Serial.println("bas D");
   }
 
@@ -283,8 +283,8 @@ void moveGLegGar() {
 
   //en bas
   if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
-    Gar3.write(posBaseGar3 - (indiceGauch3 * 2));
-    Gar2.write(posBaseGar2 - (indiceGauch3 * 3));
+    Gar3.write(posBaseGar3+20 - (indiceGauch3 * 2));
+    Gar2.write(posBaseGar2+30 - (indiceGauch3 * 3));
     Serial.println("bas G");
   }
 
