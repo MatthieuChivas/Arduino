@@ -135,6 +135,10 @@ void setup() {
   Gar2.attach(pinServoGar2, 500, 2400);
   Gar3.attach(pinServoGar3, 500, 2400);
 
+  H1.attach(pinServoH1, 500, 2400);
+  H2.attach(pinServoH2, 500, 2400);
+  H3.attach(pinServoH3, 500, 2400);
+  
   //-------------------position de base des pattes au démarrage--------------------
   Gav1.write(posBaseGav1);
   Gav2.write(posBaseGav2);
@@ -148,7 +152,10 @@ void setup() {
   Gar2.write(posBaseGar2);
   Gar3.write(posBaseGar3);
 
-
+  H1.write(posBaseH1);
+  H2.write(posBaseH2);
+  H3.write(posBaseH3);
+  
   Serial.println("Starting Loop in 3 sec");
   delay(3000);
   
