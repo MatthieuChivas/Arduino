@@ -121,13 +121,13 @@ void loop() {
     else if(recu=="reculer"){
 
     }
-    else if(recu=="tournerD"){
+    else if(recu=="droite"){
       moveDLegDav(); 
       moveLegGm();
       moveDLegDar(); 
       
     }
-    else if(recu=="tournerG"){
+    else if(recu=="gauche"){
       
     }
     delay(vitesse);
