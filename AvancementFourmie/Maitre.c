@@ -123,6 +123,10 @@ void setup() {
   Gar2.setPeriodHertz(50);
   Gar3.setPeriodHertz(50);
   
+  H1.setPeriodHertz(50);
+  H2.setPeriodHertz(50);
+  H3.setPeriodHertz(50);
+  
   Gav1.attach(pinServoGav1, 500, 2400);
   Gav2.attach(pinServoGav2, 500, 2400);
   Gav3.attach(pinServoGav3, 500, 2400);
