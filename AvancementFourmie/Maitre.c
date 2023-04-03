@@ -65,7 +65,7 @@ int avancerD = 0;
 int gaucheD = 0;
 int droiteD = 0;
 int reculerD = 0;
-int vitesse = 50;
+int vitesse = 40;
 
 int test=0;
   int posBaseGav1=110;
