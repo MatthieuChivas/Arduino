@@ -62,6 +62,7 @@ int indiceGauch4 = 0;
 
 int avancerD = 0;
 int gaucheD = 0;
+int droiteD = 0;
 int vitesse = 50;
 
 int test = 0;
@@ -175,7 +176,7 @@ void loop() {
   */
 
 
-  blueetoothSendMsg = "gauche";      // Pour les tests, on fait comme si la fourmi recevoit toujours la commande "gauche"
+  blueetoothSendMsg = "droite";      // Pour les tests, on fait comme si la fourmi recevoit toujours la commande "gauche"
 
   if (blueetoothSendMsg == "droite") {
     //tu codes en else if car l'avancement se fait petit pas par petit pas la boucle utilise le boucle du programme principal
@@ -186,7 +187,7 @@ void loop() {
 
       Maitre.print("droite;");     // Envoyer commande avec ; à la fin (caractère d'arrêt)
 
-      droiteD();
+      droiteG();
       Serial.println("Tourner a droite");
     }
   }
@@ -195,7 +196,7 @@ void loop() {
 }
 
 
-void droiteD() {
+void droiteG() {
 
   moveLegGav();
   moveDLegDm();  
@@ -227,7 +228,7 @@ void moveLegGav() { //DOUBLON
     Gav1.write((posBaseGav1 + 30) - indiceGauch4);  //Gav1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
     indiceGauch4++;
     //ici il envoie l'information de bouger la partie droite!!
-    gaucheD = 1;
+    droiteD = 1;
   }
 
   // Reset the counters for repeating the process
