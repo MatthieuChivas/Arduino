@@ -615,17 +615,17 @@ void HeadL() {
 }
 
 void Mandibules() {
-  if (indiceM <= 50) {
+  if (indiceM <= 100) {
     H3.write(posBaseH3 ++);
     indiceM ++;
   }
   
-  if (50 <= indiceM <= 100) {
+  if ((100 <= indiceM) && (indiceM <= 200)) {
     H3.write(posBaseH3 --);
     indiceM++;
   }
   
-  if (indiceM == 100){
+  if (indiceM == 200){
     indiceM = 0;
   }
 }
