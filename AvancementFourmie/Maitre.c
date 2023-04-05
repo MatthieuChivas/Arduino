@@ -615,13 +615,18 @@ void HeadL() {
 }
 
 void Mandibules() {
-  for (indiceM = 0; indiceM <= 50; indiceM++) {
+  if (indiceM <= 50) {
     H3.write(posBaseH3 ++);
-    delay(10);
+    indiceM ++;
   }
-  for (indiceM = 0; indiceM <= 50; indiceM++) {
+  
+  if (50 <= indiceM <= 100) {
     H3.write(posBaseH3 --);
-    delay(10);
+    indiceM++;
+  }
+  
+  if (indiceM == 100){
+    indiceM = 0;
   }
 }
 
