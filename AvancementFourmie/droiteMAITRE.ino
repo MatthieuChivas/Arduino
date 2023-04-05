@@ -62,6 +62,7 @@ int indiceGauch4 = 0;
 
 int avancerD = 0;
 int gaucheD = 0;
+int droiteD = 0;
 int vitesse = 50;
 
 int test = 0;
@@ -175,19 +176,19 @@ void loop() {
   */
 
 
-  blueetoothSendMsg = "gauche";      // Pour les tests, on fait comme si la fourmi recevoit toujours la commande "gauche"
+  blueetoothSendMsg = "droite";      // Pour les tests, on fait comme si la fourmi recevoit toujours la commande "gauche"
 
-  if (blueetoothSendMsg == "gauche") {
+  if (blueetoothSendMsg == "droite") {
     //tu codes en else if car l'avancement se fait petit pas par petit pas la boucle utilise le boucle du programme principal
-    if (!gaucheD) { //le booleen = 0, donc on commence avec la fonction gauche d'abord
-      gaucheG();
-      Serial.println("Tourner a gauche Gauche");
+    if (!droiteD) { //le booleen = 0, donc on commence avec la fonction gauche d'abord
+      droiteG();
+      Serial.println("Tourner a droite Droite");
     } else { // le booleen est maintenant = 1; donc on envoie la commande a l'esclave et on continue notre fonction
 
-      Maitre.print("gauche;");     // Envoyer commande avec ; à la fin (caractère d'arrêt)
+      Maitre.print("droite;");     // Envoyer commande avec ; à la fin (caractère d'arrêt)
 
-      gaucheG();
-      Serial.println("Tourner a gauche");
+      droiteG();
+      Serial.println("Tourner a droite");
     }
   }
 
@@ -195,15 +196,15 @@ void loop() {
 }
 
 
-void gaucheG() {
+void droiteG() {
 
-  moveGLegGav();
-  moveLegDm();  //SAME QUE POUR AVANCER
-  moveGLegGar();
+  moveLegGav();
+  moveDLegDm();  
+  moveLegGar();
 
 }
 
-void moveGLegGav() {
+void moveLegGav() { //DOUBLON
   // Rise the leg
   if (indiceGauch1 <= 10) {
     Gav3.write(posBaseGav3 + (indiceGauch1 * 2));
@@ -212,7 +213,7 @@ void moveGLegGav() {
   }
   // Rotate the leg
   if (indiceGauch2 <= 30) {
-    Gav1.write(posBaseGav1 - indiceGauch2); //on rajoute des degrés à la pos in 30=>60
+    Gav1.write(posBaseGav1 + indiceGauch2); //on rajoute des degrés à la pos in 30=>60
     indiceGauch2++;
   }
   // Move back to touch the ground
@@ -224,10 +225,10 @@ void moveGLegGav() {
   // Stance phase - move leg while touching the ground
   // Rotate back to initial position
   if (indiceGauch2 >= 30) {
-    Gav1.write((posBaseGav1 - 30) + indiceGauch4);  //Gav1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
+    Gav1.write((posBaseGav1 + 30) - indiceGauch4);  //Gav1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
     indiceGauch4++;
     //ici il envoie l'information de bouger la partie droite!!
-    gaucheD = 1;
+    droiteD = 1;
   }
 
   // Reset the counters for repeating the process
@@ -242,7 +243,7 @@ void moveGLegGav() {
 }
 
 
-void moveLegDm() { // DOUBLON
+void moveDLegDm() { // CHANGEE
   //haut
   if (indiceGauch1 <= 10) {
     Dm3.write(posBaseDm3 - (indiceGauch1 * 2));
@@ -251,7 +252,7 @@ void moveLegDm() { // DOUBLON
 
   //rotate ++
   if (indiceGauch2 <= 30) {
-    Dm1.write(posBaseDm1 - indiceGauch2);
+    Dm1.write(posBaseDm1 + indiceGauch2);
 
   }
 
@@ -264,12 +265,12 @@ void moveLegDm() { // DOUBLON
 
   //rotate --
   if (indiceGauch2 >= 30) {
-    Dm1.write((posBaseDm1 - 30) + indiceGauch4); //Dm1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
+    Dm1.write((posBaseDm1 + 30) - indiceGauch4); //Dm1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
   }
 }
 
 
-void moveGLegGar() {
+void moveLegGar() { //DOUBLON
   //rise leg
   if (indiceGauch1 <= 10) {
     Gar3.write(posBaseGar3 + (indiceGauch1 * 2));
@@ -278,7 +279,7 @@ void moveGLegGar() {
 
   //rotate vers l'avant
   if (indiceGauch2 <= 30) {
-    Gar1.write(posBaseGar1 - indiceGauch2); //ajouter des degrés à la pos in
+    Gar1.write(posBaseGar1 + indiceGauch2); //ajouter des degrés à la pos in
   }
 
   //en bas
@@ -290,6 +291,6 @@ void moveGLegGar() {
 
   //rotate vers l'arrière
   if (indiceGauch2 >= 30) {
-    Gar1.write((posBaseGar1 - 30) + indiceGauch4); //Gar1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
+    Gar1.write((posBaseGar1 + 30) - indiceGauch4); //Gar1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
   } //on retire des degrés à la pos in
 }

@@ -45,7 +45,6 @@ Servo H3;
 #define pinServoGar2 18
 #define pinServoGar3 19
 
-
 //Mise en place servo moteur pour la tête
 #define pinServoH1 2
 #define pinServoH2 15
@@ -68,7 +67,9 @@ int avancerD = 0;
 int gaucheD = 0;
 int droiteD = 0;
 int reculerD = 0;
-int vitesse = 40;
+
+int vitesse = 50;
+
 
 int test=0;
 
@@ -86,6 +87,7 @@ int posBaseGar3=165;
 
 //indice pour mouvement Mandibules
 int indiceM = 0;
+
 
 //indices pour position tete
 int posBaseH1 = 135; // 0 côté vert, max 180, min 60 => gauche droite
@@ -140,7 +142,7 @@ void setup() {
   H1.attach(pinServoH1, 500, 2400);
   H2.attach(pinServoH2, 500, 2400);
   H3.attach(pinServoH3, 500, 2400);
-  
+
   //-------------------position de base des pattes au démarrage--------------------
   Gav1.write(posBaseGav1);
   Gav2.write(posBaseGav2);
@@ -193,6 +195,7 @@ void loop() {
       avancerG();
     }
   }
+
 //Reculer
   if (traduireUnite(blueetoothSendMsg) == 2){
 
@@ -248,6 +251,7 @@ void loop() {
     Mandibules();
     SerialBT.println("Mandibules");
   }
+  
 
     //---------- Fonctionnalité ------------
     if(traduireCentaine(blueetoothSendMsg) == 1){
@@ -284,9 +288,10 @@ void droiteG(){
 
 //---- CODE pour reculer des pattes "gauches" -----//
 void reculerG(){
-  moveGLegGav();
-  moveDLegDm();
-  moveGLegGar();
+  moveRevLegGav();
+  moveRevLegDm();
+  moveRevLegGar();
+
 }
 
 
@@ -476,6 +481,98 @@ void moveDLegDm() {
 }
 
 
+void moveRevLegGav() {
+  // Rise the leg
+  if (indiceGauch1 <= 10) {
+    Gav3.write(posBaseGav3 + (indiceGauch1 * 2));
+    Gav2.write(posBaseGav2 + (indiceGauch1 * 3));
+    indiceGauch1++;
+  }
+  // Rotate the leg
+  if (indiceGauch2 <= 30) {
+    Gav1.write((posBaseGav1 + 15) - indiceGauch2); //on avance la patte pour le mouvement
+    indiceGauch2++;
+  }
+  // Move back to touch the ground
+  if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
+    Gav3.write(posBaseGav3+20 - (indiceGauch3 * 2));
+    Gav2.write(posBaseGav2+30 - (indiceGauch3 * 3));
+    indiceGauch3++;
+  }
+  // Stance phase - move leg while touching the ground
+  // Rotate back to initial position
+  if (indiceGauch2 >= 30) {
+    Gav1.write((posBaseGav1 - 15) + indiceGauch4);  //Gav1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
+    indiceGauch4++;
+    //ici il envoie l'information de bouger la partie droite!!
+    reculerD = 1;
+  }
+
+  // Reset the counters for repeating the process
+  if (indiceGauch4 >= 30) {
+    Serial.println("Premier cycle fini");
+    indiceGauch1 = 0;
+    indiceGauch2 = 0;
+    indiceGauch3 = 0;
+    indiceGauch4 = 0;
+  }
+  // Each iteration or step is executed in the main loop section where there is also a delay time for controlling the speed of movement
+}
+
+
+void moveRevLegDm() { 
+  //haut
+  if (indiceGauch1 <= 10) {
+    Dm3.write(posBaseDm3 - (indiceGauch1 * 2));
+    Dm2.write(posBaseDm2 - (indiceGauch1 * 3));
+  }
+
+  //rotate ++
+  if (indiceGauch2 <= 30) {
+    Dm1.write(posBaseDm1 + indiceGauch2);
+
+  }
+
+  //bas
+  if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
+    Dm3.write(posBaseDm3-20 + (indiceGauch3 * 2));
+    Dm2.write(posBaseDm2-30 + (indiceGauch3 * 3));
+    Serial.println("bas D");
+  }
+
+  //rotate --
+  if (indiceGauch2 >= 30) {
+    Dm1.write((posBaseDm1 + 30) - indiceGauch4); //Dm1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
+  }
+}
+
+
+void moveRevLegGar() {
+  //rise leg
+  if (indiceGauch1 <= 10) {
+    Gar3.write(posBaseGar3 + (indiceGauch1 * 2));
+    Gar2.write(posBaseGar2 + (indiceGauch1 * 3));
+  }
+  //rotate vers l'avant
+
+  if (indiceGauch2 <= 30) {
+    Gar1.write((posBaseGar1 + 15) - indiceGauch2); //ajouter des degrés à la pos in
+  }
+
+  //en bas
+  if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
+    Gar3.write(posBaseGar3+20 - (indiceGauch3 * 2));
+    Gar2.write(posBaseGar2+30 - (indiceGauch3 * 3));
+    Serial.println("bas G");
+  }
+
+  //rotate vers l'arrière
+  if (indiceGauch2 >= 30) {
+    Gar1.write((posBaseGar1 - 15) + indiceGauch4); //Gar1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
+  } //on retire des degrés à la pos in
+}
+
+
 //Tete
 void HeadUP() {
   if (posBaseH2 >= 90) {
@@ -547,3 +644,7 @@ int traduireUnite(int numberCommand){
     int unite = numberCommand%10;
     return(unite);
 }
+    delay(10);
+  }
+}
+
