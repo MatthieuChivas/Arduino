@@ -644,7 +644,3 @@ int traduireUnite(int numberCommand){
     int unite = numberCommand%10;
     return(unite);
 }
-    delay(10);
-  }
-}
-
