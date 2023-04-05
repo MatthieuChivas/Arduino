@@ -1,3 +1,4 @@
+
 //Serveur Bluetooth Fourmi
 #include "BluetoothSerial.h"
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
@@ -6,11 +7,8 @@
 #include <ESP32Servo.h>
 
 BluetoothSerial SerialBT;
-const String deviceName = "FourmiLOL";
-String blueetoothSendMsgStr;
-char blueetoothSendMsgChar[4];
-int blueetoothSendMsg;
-
+const String deviceName = "Fourmi";
+String blueetoothSendMsg;
 
 //setup le port 2 comme maitre (envoyer des informations)
 HardwareSerial Maitre(2);
@@ -45,17 +43,26 @@ Servo H3;
 #define pinServoGar2 18
 #define pinServoGar3 19
 
-//Mise en place servo moteur pour la tête
-#define pinServoH1 2
-#define pinServoH2 15
-#define pinServoH3 13
-
-
 //define les Pin qu'on va utilier pour transmettre des informations
 //Tx : transmetteur doit être branché sur un receveur de l'autre ESP32
 //Rx : receveur doit être branché sur un transmetteur de l'autre ESP32
 #define SenderTxPin 22
 #define SenderRxPin 23
+
+//Mise en place servo moteur pour la tête
+#define pinServoH1 2
+#define pinServoH2 15
+#define pinServoH3 13
+
+//Ultrasons
+
+#define trigPin  14
+#define echoPin  27
+
+//define sound speed in cm/uS
+#define SOUND_SPEED 0.034
+
+
 
 //indice pour avancement des pattes gauches
 int indiceGauch1 = 0;
@@ -67,27 +74,23 @@ int avancerD = 0;
 int gaucheD = 0;
 int droiteD = 0;
 int reculerD = 0;
-
 int vitesse = 50;
 
-
 int test=0;
-
-int posBaseGav1=110;
-int posBaseGav2=145;
-int posBaseGav3=165;
+  int posBaseGav1=110;
+  int posBaseGav2=145;
+  int posBaseGav3=165;
   
-int posBaseDm1=95;
-int posBaseDm2=35;
-int posBaseDm3=15;
+  int posBaseDm1=95;
+  int posBaseDm2=35;
+  int posBaseDm3=15;
 
-int posBaseGar1=85;
-int posBaseGar2=145;
-int posBaseGar3=165;
+  int posBaseGar1=85;
+  int posBaseGar2=145;
+  int posBaseGar3=165;
 
 //indice pour mouvement Mandibules
 int indiceM = 0;
-
 
 //indices pour position tete
 int posBaseH1 = 135; // 0 côté vert, max 180, min 60 => gauche droite
@@ -97,6 +100,8 @@ int posBaseH3 = 50; // max 100, ouvertes min 0 fermées
 
 
 //-------------------------Variables Temporaires ci-dessous------------------------
+
+
 
 void setup() {
   //initialise console
@@ -139,10 +144,6 @@ void setup() {
   Gar2.attach(pinServoGar2, 500, 2400);
   Gar3.attach(pinServoGar3, 500, 2400);
 
-  H1.attach(pinServoH1, 500, 2400);
-  H2.attach(pinServoH2, 500, 2400);
-  H3.attach(pinServoH3, 500, 2400);
-
   //-------------------position de base des pattes au démarrage--------------------
   Gav1.write(posBaseGav1);
   Gav2.write(posBaseGav2);
@@ -156,117 +157,119 @@ void setup() {
   Gar2.write(posBaseGar2);
   Gar3.write(posBaseGar3);
 
-  H1.write(posBaseH1);
-  H2.write(posBaseH2);
-  H3.write(posBaseH3);
   
+  pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+  pinMode(echoPin, INPUT); // Sets the echoPin as an Input
+  // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+
+
+
   Serial.println("Starting Loop in 3 sec");
   delay(3000);
+  
 }
 
 
 
 void loop() {
-    //---------------- Reception Bluetooth -----------
   if (SerialBT.available()) {
-    blueetoothSendMsgStr = SerialBT.readStringUntil(';');
-    blueetoothSendMsgStr.toCharArray(blueetoothSendMsgChar, 4);
-    //blueetoothSendMsg.trim();
-    SerialBT.print("Bluetooth : ");
-    SerialBT.println(blueetoothSendMsgStr);
-    blueetoothSendMsg = atoi(blueetoothSendMsgChar);
-    
-    if (blueetoothSendMsg!=0){
-      SerialBT.println("Conversion OK");
-    }
-    else {  
-      SerialBT.println("Conversion Pas OK :(");
-    }
+    //ajout d'un commentaire test de github
+    blueetoothSendMsg = SerialBT.readString();
+    blueetoothSendMsg.trim();
+    Serial.print("Bluetooth : ");
+    Serial.println(blueetoothSendMsg);
   }
 
-    //------------- Mouvement du corps --------------
-//Avancer
-  if (traduireUnite(blueetoothSendMsg) == 1) {
+  
+  blueetoothSendMsg = "avancer";      // Pour les tests, on fait comme si la fourmi recevoit toujours la commande "avancer"
+
+
+
+  if (blueetoothSendMsg == "avancer") {
+    //tu codes en else if car l'avancement se fait petit pas par petit pas la boucle utilise le boucle du programme principal
     if (!avancerD) {
       avancerG();
-    } else {      
-      Maitre.print("avancer;");
-      SerialBT.println("Envoi info autre servo");   
-      avancerG();
-    }
-  }
-
-//Reculer
-  if (traduireUnite(blueetoothSendMsg) == 2){
-
-    if (!reculerD) { 
-      reculerG();
+      Serial.println("Avancer Gauche");
     } else {
-      Maitre.print("reculer;");    
+
+      Maitre.print("avancer;");     // Envoyer commande avec ; à la fin (caractère d'arrêt)
+
+      avancerG();
+      Serial.println("Avancer Droite et gauche");
+    }
+  }
+  if (blueetoothSendMsg == "reculer "){
+    //tu codes en else if car l'avancement se fait petit pas par petit pas la boucle utilise le boucle du programme principal
+    if (!reculerD) { //le booleen = 0, donc on commence avec la fonction gauche d'abord
       reculerG();
+      Serial.println("Reculer Gauche");
+    } else { // le booleen est maintenant = 1; donc on envoie la commande a l'esclave et on continue notre fonction
+
+      Maitre.print("reculer;");     // Envoyer commande avec ; à la fin (caractère d'arrêt)
+
+      reculerG();
+      Serial.println("Reculer");
     }
   }
-//Droite
-  if (traduireUnite(blueetoothSendMsg) == 4){
-    if (!droiteD) { 
+  if (blueetoothSendMsg=="droite"){
+    //tu codes en else if car l'avancement se fait petit pas par petit pas la boucle utilise le boucle du programme principal
+    if (!droiteD) { //le booleen = 0, donc on commence avec la fonction gauche d'abord
       droiteG();
-    } else { 
-      Maitre.print("droite;");     
+      Serial.println("Tourner a droite Droite");
+    } else { // le booleen est maintenant = 1; donc on envoie la commande a l'esclave et on continue notre fonction
+
+      Maitre.print("droite;");     // Envoyer commande avec ; à la fin (caractère d'arrêt)
+
       droiteG();
-    }
-  }
-//Gauche
-  if (traduireUnite(blueetoothSendMsg) == 3){
-    if (!gaucheD) { 
-      gaucheG();
-    } else { 
-      Maitre.print("gauche;");     
-      gaucheG();
+      Serial.println("Tourner a droite");
     }
   }
   
-    //-------------- Tête --------------------
-//Haute
-  if (traduireDizaine(blueetoothSendMsg) == 1) {
+  if (blueetoothSendMsg=="gauche"){
+    //tu codes en else if car l'avancement se fait petit pas par petit pas la boucle utilise le boucle du programme principal
+    if (!gaucheD) { //le booleen = 0, donc on commence avec la fonction gauche d'abord
+      gaucheG();
+      Serial.println("Tourner a gauche Gauche");
+    } else { // le booleen est maintenant = 1; donc on envoie la commande a l'esclave et on continue notre fonction
+
+      Maitre.print("gauche;");     // Envoyer commande avec ; à la fin (caractère d'arrêt)
+
+      gaucheG();
+      Serial.println("Tourner a gauche");
+    }
+  }
+  
+   if (blueetoothSendMsg == "HeadUP") {
     HeadUP();
     SerialBT.println("Tête haute");
   }
-//Basse
-  if (traduireDizaine(blueetoothSendMsg) == 2) {
+  if (blueetoothSendMsg == "HeadDOWN") {
     HeadDOWN();
     SerialBT.println("Tête basse");
   }
-//Droite
-  if (traduireDizaine(blueetoothSendMsg) == 4) {
+  if (blueetoothSendMsg == "HeadR") {
     HeadR();
     SerialBT.println("Tête droite");
   }
-//Gauche
-  if (traduireDizaine(blueetoothSendMsg) == 3) {
+  if (blueetoothSendMsg == "HeadL") {
     HeadL();
     SerialBT.println("Tête gauche");
   }
-//Pour l'instant je touche pas aux mandibules car normalement il y a deux fonctions fermé et ouverte?
-  if (traduireDizaine(blueetoothSendMsg) == 5) {
+  if (blueetoothSendMsg == "Mandibules") {
     Mandibules();
     SerialBT.println("Mandibules");
   }
+
+  Ultrasons();  
+
   
 
-    //---------- Fonctionnalité ------------
-    if(traduireCentaine(blueetoothSendMsg) == 1){
-        SerialBT.println("Jauuuuune");
-    }
-    if(traduireCentaine(blueetoothSendMsg) == 2){
-        SerialBT.println("Vert");
-    }
-    if(traduireCentaine(blueetoothSendMsg) == 3){
-        SerialBT.println("Rouge");
-    }
-    if(traduireCentaine(blueetoothSendMsg) == 4){
-        SerialBT.println("Blanc");
-    }
+  if (Ultrasons() < 10000)
+  {
+    Mandibules();
+  }
   
+
   delay(vitesse);
 }
 
@@ -288,10 +291,9 @@ void droiteG(){
 
 //---- CODE pour reculer des pattes "gauches" -----//
 void reculerG(){
-  moveRevLegGav();
-  moveRevLegDm();
-  moveRevLegGar();
-
+  moveGLegGav();
+  moveDLegDm();
+  moveGLegGar();
 }
 
 
@@ -336,6 +338,7 @@ void moveLegGav() {
   
   // Reset the counters for repeating the process
   if (indiceGauch4 >= 30) {
+    Serial.println("Premier cycle fini");
     indiceGauch1 = 0;
     indiceGauch2 = 0;
     indiceGauch3 = 0;
@@ -360,6 +363,7 @@ void moveLegGar() {
   if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
     Gar3.write(posBaseGar3+20 - (indiceGauch3*2));
     Gar2.write(posBaseGar2+30 - (indiceGauch3*3));
+    Serial.println("bas G");
   }
 
   //rotate vers l'arrière
@@ -385,6 +389,7 @@ void moveLegDm() {
   if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
     Dm3.write(posBaseDm3-20 + (indiceGauch3*2));
     Dm2.write(posBaseDm2-30 + (indiceGauch3*3));
+    Serial.println("bas D");
   }
 
   //rotate --
@@ -423,6 +428,7 @@ void moveGLegGav() {
 
   // Reset the counters for repeating the process
   if (indiceGauch4 >= 30) {
+    Serial.println("Premier cycle fini");
     indiceGauch1 = 0;
     indiceGauch2 = 0;
     indiceGauch3 = 0;
@@ -447,6 +453,7 @@ void moveGLegGar() {
   if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
     Gar3.write(posBaseGar3+20 - (indiceGauch3 * 2));
     Gar2.write(posBaseGar2+30 - (indiceGauch3 * 3));
+    Serial.println("bas G");
   }
 
   //rotate vers l'arrière
@@ -456,71 +463,6 @@ void moveGLegGar() {
 }
 
 void moveDLegDm() {
-  //haut
-  if (indiceGauch1 <= 10) {
-    Dm3.write(posBaseDm3 - (indiceGauch1 * 2));
-    Dm2.write(posBaseDm2 - (indiceGauch1 * 3));
-  }
-
-  //rotate ++
-  if (indiceGauch2 <= 30) {
-    Dm1.write(posBaseDm1 + indiceGauch2);
-
-  }
-
-  //bas
-  if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
-    Dm3.write(posBaseDm3-20 + (indiceGauch3 * 2));
-    Dm2.write(posBaseDm2-30 + (indiceGauch3 * 3));
-  }
-
-  //rotate --
-  if (indiceGauch2 >= 30) {
-    Dm1.write((posBaseDm1 + 30) - indiceGauch4); //Dm1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
-  }
-}
-
-
-void moveRevLegGav() {
-  // Rise the leg
-  if (indiceGauch1 <= 10) {
-    Gav3.write(posBaseGav3 + (indiceGauch1 * 2));
-    Gav2.write(posBaseGav2 + (indiceGauch1 * 3));
-    indiceGauch1++;
-  }
-  // Rotate the leg
-  if (indiceGauch2 <= 30) {
-    Gav1.write((posBaseGav1 + 15) - indiceGauch2); //on avance la patte pour le mouvement
-    indiceGauch2++;
-  }
-  // Move back to touch the ground
-  if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
-    Gav3.write(posBaseGav3+20 - (indiceGauch3 * 2));
-    Gav2.write(posBaseGav2+30 - (indiceGauch3 * 3));
-    indiceGauch3++;
-  }
-  // Stance phase - move leg while touching the ground
-  // Rotate back to initial position
-  if (indiceGauch2 >= 30) {
-    Gav1.write((posBaseGav1 - 15) + indiceGauch4);  //Gav1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
-    indiceGauch4++;
-    //ici il envoie l'information de bouger la partie droite!!
-    reculerD = 1;
-  }
-
-  // Reset the counters for repeating the process
-  if (indiceGauch4 >= 30) {
-    Serial.println("Premier cycle fini");
-    indiceGauch1 = 0;
-    indiceGauch2 = 0;
-    indiceGauch3 = 0;
-    indiceGauch4 = 0;
-  }
-  // Each iteration or step is executed in the main loop section where there is also a delay time for controlling the speed of movement
-}
-
-
-void moveRevLegDm() { 
   //haut
   if (indiceGauch1 <= 10) {
     Dm3.write(posBaseDm3 - (indiceGauch1 * 2));
@@ -547,104 +489,90 @@ void moveRevLegDm() {
 }
 
 
-void moveRevLegGar() {
-  //rise leg
-  if (indiceGauch1 <= 10) {
-    Gar3.write(posBaseGar3 + (indiceGauch1 * 2));
-    Gar2.write(posBaseGar2 + (indiceGauch1 * 3));
-  }
-  //rotate vers l'avant
-
-  if (indiceGauch2 <= 30) {
-    Gar1.write((posBaseGar1 + 15) - indiceGauch2); //ajouter des degrés à la pos in
-  }
-
-  //en bas
-  if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
-    Gar3.write(posBaseGar3+20 - (indiceGauch3 * 2));
-    Gar2.write(posBaseGar2+30 - (indiceGauch3 * 3));
-    Serial.println("bas G");
-  }
-
-  //rotate vers l'arrière
-  if (indiceGauch2 >= 30) {
-    Gar1.write((posBaseGar1 - 15) + indiceGauch4); //Gar1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
-  } //on retire des degrés à la pos in
-}
-
-
 //Tete
 void HeadUP() {
   if (posBaseH2 >= 90) {
     H2.write(posBaseH2);
+    Serial.println(posBaseH2);
     posBaseH2--;
   }
   else {
     H2.write(90);
+    Serial.println(posBaseH2);
   }
 }
 
 void HeadDOWN() {
   if (posBaseH2 <= 170) {
     H2.write(posBaseH2);
+    Serial.println(posBaseH2);
     posBaseH2++;
   }
   else {
     H2.write(170);
+    Serial.println(posBaseH2);
   }
 }
 
 void HeadR() {
   if (posBaseH1 <= 180) {
     H1.write(posBaseH1);
+    Serial.println(posBaseH1);
     posBaseH1++;
   }
   else {
     H1.write(180);
+    Serial.println(posBaseH1);
   }
 }
 
 void HeadL() {
   if (posBaseH1 >= 60) {
     H1.write(posBaseH1);
+    Serial.println(posBaseH1);
     posBaseH1--;
   }
   else {
     H1.write(60);
+    Serial.println(posBaseH1);
   }
 }
 
 void Mandibules() {
   for (indiceM = 0; indiceM <= 50; indiceM++) {
     H3.write(posBaseH3 ++);
+    //Serial.println(posBaseH3);
     delay(10);
   }
   for (indiceM = 0; indiceM <= 50; indiceM++) {
     H3.write(posBaseH3 --);
+    //Serial.println(posBaseH3);
     delay(10);
   }
 }
 
-//Boutton
-int traduireCentaine(int numberCommand){
-    int centaine=numberCommand/100;
-    centaine=centaine%10;
-    return(centaine);
+void Ultrasons()
+{
+  // Clears the trigPin
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin on HIGH state for 10 micro seconds
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  float duration = pulseIn(echoPin, HIGH);
+  
+  // Calculate the distance
+  int distanceCm = duration * SOUND_SPEED/2;
+  Serial.print("Distance (cm): ");
+  Serial.println(distanceCm);
+
+  delay(1000);
+
+  return distanceCm;
 }
 
-//Tete
-int traduireDizaine(int numberCommand){
-    int dizaine=numberCommand/10;
-    dizaine=dizaine%10;
-    return(dizaine);
-}
 
-//Corps
-int traduireUnite(int numberCommand){
-    int unite = numberCommand%10;
-    return(unite);
-}
-    delay(10);
-  }
-}
 

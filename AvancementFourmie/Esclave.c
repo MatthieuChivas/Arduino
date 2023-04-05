@@ -41,17 +41,17 @@ int indiceDroit4 = 0;
 
 int vitesse=40;
 
-  int posBaseDav1=90;
-  int posBaseDav2=35;
-  int posBaseDav3=15;
+int posBaseDav1=90;
+int posBaseDav2=35;
+int posBaseDav3=15;
   
-  int posBaseGm1=100;
-  int posBaseGm2=150;
-  int posBaseGm3=165;
+int posBaseGm1=100;
+int posBaseGm2=150;
+int posBaseGm3=165;
 
-  int posBaseDar1=110;
-  int posBaseDar2=35;
-  int posBaseDar3=15;
+int posBaseDar1=110;
+int posBaseDar2=35;
+int posBaseDar3=15;
 
 String recu;
 

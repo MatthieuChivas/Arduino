@@ -1,16 +1,16 @@
 // --------------------------------------------------------------- Client Bluetooth telecommande ----------------------------------------------------------------------------------
 #include "BluetoothSerial.h"
 BluetoothSerial SerialBT;
-const String deviceName = "Telecommande";
-String ServerName = "Fourmi";
+const String deviceName = "TelecommandeXYZ";
+String ServerName = "FourmiXYZ";
 bool connected;
 // ------------------------------------------------------------- Fin Client Bluetooth telecommande --------------------------------------------------------------------------------
 
 // -------------------------------------------------------------- Déclarations pour les joysticks ---------------------------------------------------------------------------------
-#define JSXG_PIN  4 // ESP32 pin GIOP4 (ADC) connected to VRX pin joystick gauche
-#define JSYG_PIN  2 // ESP32 pin GIOP2 (ADC) connected to VRY pin joystick gauche
-#define JSXD_PIN  36 // ESP32 pin GIOP36 (ADC) connected to VRX pin joystick droit
-#define JSYD_PIN  39 // ESP32 pin GIOP39 (ADC) connected to VRY pin joystick droit
+#define JSXG_PIN  36 // ESP32 pin GIOP4 (ADC) connected to VRX pin joystick gauche
+#define JSYG_PIN  39 // ESP32 pin GIOP2 (ADC) connected to VRY pin joystick gauche
+#define JSXD_PIN  2  // ESP32 pin GIOP36 (ADC) connected to VRX pin joystick droit
+#define JSYD_PIN  4  // ESP32 pin GIOP39 (ADC) connected to VRY pin joystick droit
 
 #define LEFT_THRESHOLD  1000
 #define RIGHT_THRESHOLD 3000
@@ -33,19 +33,19 @@ int commandD = COMMAND_NO;  // Commande joystick droit
 // -------------------------------------------------------------- Fin déclarations pour les joysticks -----------------------------------------------------------------------------
 
 // -------------------------------------------------------------- Déclarations pour les boutons (interruptions) -------------------------------------------------------------------
-#define boutonJaune 16
+#define boutonJaune 5
 #define boutonVert 17
-#define boutonRouge 5
+#define boutonRouge 16
 #define boutonBlanc 18
-#define boutonJSG 19
-#define boutonJSD 21
+#define boutonJSG 32
+#define boutonJSD 19
 bool flagBoutonJaune = 0, flagBoutonVert = 0, flagBoutonRouge = 0, flagBoutonBlanc = 0, flagBoutonJSG = 0, flagBoutonJSD = 0;
 
 // -------------------------------------------------------------- Fin déclarations pour les boutons -------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------ Déclarations pour les DEL -----------------------------------------------------------------------------
 #define delJaune 33
-#define delVert 32
+#define delVert 14
 #define delRouge 27
 #define delBlanc 26
 #define delBleu 25
@@ -63,6 +63,16 @@ void IRAM_ATTR interruptBoutonJSG();
 void IRAM_ATTR interruptBoutonJSD();
 // ----------------------------------------------------------------------- Fin déclarations de fonctions --------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------- Variables globales -------------------------------------------------------------------------------
+bool flagEnregistrement = 0;              // Lié à l'interruption du bouton rouge
+bool flagClearTableauEnregistrement = 0;  // Lié à l'interruption du bouton rouge
+bool flagFinTableauEnregistrement = 0;    // Lié à l'interruption du bouton rouge
+bool flagJouerEnregistrement = 0;         // Lié à l'interruption du bouton blanc
+int tableauEnregistrement[1000][2];       // Tableau dans lequel les commandes sont enregistrées
+int comptCommandesEnr = 0;                  // Compteur du nombre de commandes enregistrées
+int positionTableauX = 0;
+// --------------------------------------------------------------------------- Fin variables globales -----------------------------------------------------------------------------
+
 // -------- Variables temporaire pour debug -----------
 int nbCycles = 0;
 // ------ Fin variables temporaire pour debug --------- 
@@ -73,7 +83,7 @@ void setup() {
   Serial.println("--- Demarrage de la telecommande ---");
 
   // Bluetooth
-  /*   // Désactiver bluetooth pour les tests, sinon la telecommande essaie de se connecter à la fourmi et le code bloque ici
+     // Désactiver bluetooth pour les tests, sinon la telecommande essaie de se connecter à la fourmi et le code bloque ici
   SerialBT.begin(deviceName, true);   // Démarrage du bluetooth
   Serial.print("Connexion a " + ServerName);
   while(!connected){                  // Connexion à la fourmi
@@ -83,7 +93,7 @@ void setup() {
   }
   Serial.println("Connexion etablie");
   delay(500);
-  */
+  
   // Fin Bluetooth
   
   // Boutons en interruption
@@ -119,25 +129,61 @@ void setup() {
 void loop() {
 // Code principal
   int commandesInt = LectureCommandes();
-    // Convertir commandesInt en commandesStr
-    // Envoyer commandesStr par BT à la fourmi
+  String commandesStr = String(commandesInt);      // Convertir commandesInt en commandesStr  
+  SerialBT.print(String(commandesStr + ";"));   //Envoyer les commandes par BT (; à la fin de la commande pour filtrage à la réception)
+
+
+  if(flagClearTableauEnregistrement == 1){  // Reset les données du tableau à 0, comme ça au prochain flagEnregistrement == 1, il recommence à 0
+    for(int x=0; x<1000; x++){                 // Initialiser toutes les données du tableau à 0
+      for(int y=0; y<2; y++){
+          tableauEnregistrement[x][y] = 0;
+      }
+    }
+    flagClearTableauEnregistrement = 0;
+    comptCommandesEnr = 0;              // Reset le nombre de commandes enregistrées
+    positionTableauX = 0;                // Reset la position dans le tableau d'enregistrement en X    
+  }
+  
+  if(flagEnregistrement == 1){
+    tableauEnregistrement[positionTableauX][0] = commandesInt; // Enregistrer la commande dans un tableau
+    comptCommandesEnr++;
+    
+  }
+
+  if(flagFinTableauEnregistrement == 1){  // Déclenché à la fin de l'enregistrement, metttre commande 999 à la fin du tableau
+      tableauEnregistrement[comptCommandesEnr][0] = 999;
+      flagFinTableauEnregistrement = 0;
+  }
+
+
+  if(flagEnregistrement == 0){
+    
+
+
+
+    
+  }
+
+
+
+
     // Traiter commandesInt selon les DEL à illuminer
       // Si commandesInt = boutonRouge (enregistrement), il faut mettre commandesInt dans un tableau (effacer les données du tableau complet avant écriture, nouvel enregistement écrase l'ancien)
         // Si commandesInt = boutonBlanc (playback), il faut lire les infos du tableau, les convertir en commandesStr
 
 
 
-
 // Fin code principal
 
 // Communication Bluetooth - Terminal
-  if (Serial.available()) {
+  /*if (Serial.available()) {
     SerialBT.write(Serial.read());   // Envoyer ce qu'on écrit au terminal par bluetooth
   }
   if (SerialBT.available()) {
     Serial.println(SerialBT.readString());  //Écrire ce qu'on reçoit par bluetooth au terminal
   }
  //delay(20);
+ */
 // Fin communication Bluetooth - Terminal
 
 // Temporaire pour debug
@@ -147,7 +193,7 @@ void loop() {
   nbCycles++;
 // Fin temporaire pour debug  
 
-
+delay(1000);
 } // Fin loop()
 
 
@@ -182,19 +228,19 @@ int LectureCommandes(){
 
   switch (commandG){
     case COMMAND_NO:
-      commandesFormatInt = commandesFormatInt + 000;
+      commandesFormatInt = commandesFormatInt + 0;
       break;
     case COMMAND_UP:
-      commandesFormatInt = commandesFormatInt + 001;
+      commandesFormatInt = commandesFormatInt + 1;
       break;
     case COMMAND_DOWN:
-      commandesFormatInt = commandesFormatInt + 002;
+      commandesFormatInt = commandesFormatInt + 2;
       break;
     case COMMAND_LEFT:
-      commandesFormatInt = commandesFormatInt + 003;
+      commandesFormatInt = commandesFormatInt + 3;
       break;
     case COMMAND_RIGHT:
-      commandesFormatInt = commandesFormatInt + 004;
+      commandesFormatInt = commandesFormatInt + 4;
       break;
   }
 
@@ -212,19 +258,19 @@ int LectureCommandes(){
 
   switch (commandD){
     case COMMAND_NO:
-      commandesFormatInt = commandesFormatInt + 000;
+      commandesFormatInt = commandesFormatInt + 0;
       break;
     case COMMAND_UP:
-      commandesFormatInt = commandesFormatInt + 010;
+      commandesFormatInt = commandesFormatInt + 10;
       break;
     case COMMAND_DOWN:
-      commandesFormatInt = commandesFormatInt + 020;
+      commandesFormatInt = commandesFormatInt + 20;
       break;
     case COMMAND_LEFT:
-      commandesFormatInt = commandesFormatInt + 030;
+      commandesFormatInt = commandesFormatInt + 30;
       break;
     case COMMAND_RIGHT:
-      commandesFormatInt = commandesFormatInt + 040;
+      commandesFormatInt = commandesFormatInt + 40;
       break;
   }
   //----------------------------------------------------------------------------- Fin lecture des joystick 
@@ -257,6 +303,7 @@ int LectureCommandes(){
       // Si aucun flag == 1, alors les centaines restent à 0
   //----------------------------------------------------------------------------- Fin lecture des boutons
 
+  //commandesFormatInt = 123; // Pour test, return toujours la commande 123
   return commandesFormatInt;
 }   // Fin LectureCommandes()
 
@@ -285,6 +332,17 @@ void IRAM_ATTR interruptBoutonRouge(){
   flagBoutonBlanc = 0;
   flagBoutonJSG   = 0;
   flagBoutonJSD   = 0;
+
+  if(flagEnregistrement == 0){    // flagEnregistrement: 1 = enregistrer, 0 = ne pas enregistrer
+    flagEnregistrement = 1;
+    flagClearTableauEnregistrement = 1;
+    digitalWrite(delRouge, LOW);  // Allumer la DEL rouge
+  }
+  else{
+    flagEnregistrement = 0;
+    flagFinTableauEnregistrement = 1;
+    digitalWrite(delRouge, HIGH);  // Éteindre la DEL rouge
+  }
 }
 void IRAM_ATTR interruptBoutonBlanc(){
   flagBoutonJaune = 0;
@@ -293,6 +351,15 @@ void IRAM_ATTR interruptBoutonBlanc(){
   flagBoutonBlanc = 1;
   flagBoutonJSG   = 0;
   flagBoutonJSD   = 0;
+
+  if(flagJouerEnregistrement == 0){    // flagJouerEnregistrement: 1 = jouer l'enregistrement, 0 = ne pas jouer l'enregistrement
+    flagJouerEnregistrement = 1;
+    digitalWrite(delBlanc, LOW);  // Allumer la DEL blanche
+  }
+  else{
+    flagJouerEnregistrement = 0;
+    digitalWrite(delBlanc, HIGH);  // Éteindre la DEL blanche
+  }  
 }
 void IRAM_ATTR interruptBoutonJSG(){    // Les boutons JSG et JSD n'on pas de fonctions définis, leur interrupt ne fait rien
   /*flagBoutonJaune = 0;
