@@ -136,6 +136,10 @@ void loop() {
       moveLegDar(); 
       moveGLegGm();
     }
+    else if(recu=="pos0"){
+      Serial.println("je me replace");
+      pos0D();
+    }
     delay(vitesse);
   }
 
@@ -388,4 +392,15 @@ void moveRevLegGm() {
   if (indiceDroit2 >= 30) {
     Gm1.write((posBaseGm1-30) + indiceDroit4);  //Dm1 est à sa (posBase-30) pcq elle est à la position avancée. On la rétracte vers sa posBase (+30)
   }
+}
+void pos0D(){
+  Dav1.write(posBaseDav1);
+  Dav2.write(posBaseDav2);
+  Dav3.write(posBaseDav3);
+  Dar1.write(posBaseDar1);
+  Dar2.write(posBaseDar2);
+  Dar3.write(posBaseDar3);
+  Gm1.write(posBaseGm1);
+  Gm2.write(posBaseGm2);
+  Gm3.write(posBaseGm3);
 }
