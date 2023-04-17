@@ -7,9 +7,7 @@
 
 BluetoothSerial SerialBT;
 const String deviceName = "FourmiLOL";
-String blueetoothSendMsgStr;
-char blueetoothSendMsgChar[4];
-int blueetoothSendMsg;
+String bluetoothSendMsgStr;
 
 
 //setup le port 2 comme maitre (envoyer des informations)
@@ -169,105 +167,107 @@ void setup() {
 void loop() {
     //---------------- Reception Bluetooth -----------
   if (SerialBT.available()) {
-    blueetoothSendMsgStr = SerialBT.readStringUntil(';');
-    blueetoothSendMsgStr.toCharArray(blueetoothSendMsgChar, 4);
-    //blueetoothSendMsg.trim();
+    bluetoothSendMsgStr = SerialBT.readStringUntil(';');
+    bluetoothSendMsg.trim();
     SerialBT.print("Bluetooth : ");
-    SerialBT.println(blueetoothSendMsgStr);
-    blueetoothSendMsg = atoi(blueetoothSendMsgChar);
+    SerialBT.println(bluetoothSendMsgStr);
     
-    if (blueetoothSendMsg!=0){
+    /*if (bluetoothSendMsgStr!=0){
       SerialBT.println("Conversion OK");
     }
     else {  
       SerialBT.println("Conversion Pas OK :(");
-    }
+    }*/
   }
 
     //------------- Mouvement du corps --------------
 //Avancer
-  if (traduireUnite(blueetoothSendMsg) == 1) {
+  if (bluetoothSendMsgStr[2] == 1) {
     if (!avancerD) {
       avancerG();
     } else {      
-      Maitre.print("avancer;");
+      Maitre.print("1;");
       SerialBT.println("Envoi info autre servo");   
       avancerG();
     }
   }
 
 //Reculer
-  if (traduireUnite(blueetoothSendMsg) == 2){
+  else if (bluetoothSendMsgStr[2] == 2){
 
     if (!reculerD) { 
       reculerG();
     } else {
-      Maitre.print("reculer;");    
+      Maitre.print("2;");    
       reculerG();
     }
   }
-//Droite
-  if (traduireUnite(blueetoothSendMsg) == 4){
-    if (!droiteD) { 
-      droiteG();
-    } else { 
-      Maitre.print("droite;");     
-      droiteG();
-    }
-  }
+
 //Gauche
-  if (traduireUnite(blueetoothSendMsg) == 3){
+  else if (bluetoothSendMsgStr[2] == 3){
     if (!gaucheD) { 
       gaucheG();
     } else { 
-      Maitre.print("gauche;");     
+      Maitre.print("3;");     
       gaucheG();
     }
   }
-//Position 0
-  if (bluetoothSendMsgStr[0] == 0){
+  
+  //Droite
+  else if (bluetoothSendMsgStr[2] == 4){
+    if (!droiteD) { 
+      droiteG();
+    } else { 
+      Maitre.print("4;");     
+      droiteG();
+    }
+  }
+  
+  //Position 0
+  else if (bluetoothSendMsgStr[2] == 0){
     pos0G();
     Maitre.print("0;");
-  }  
+  }
+
     //-------------- Tête --------------------
 //Haute
-  if (traduireDizaine(blueetoothSendMsg) == 1) {
+  if (bluetoothSendMsgStr[1] == 1) {
     HeadUP();
     SerialBT.println("Tête haute");
   }
 //Basse
-  if (traduireDizaine(blueetoothSendMsg) == 2) {
+  else if (bluetoothSendMsgStr[1] == 2) {
     HeadDOWN();
     SerialBT.println("Tête basse");
   }
 //Droite
-  if (traduireDizaine(blueetoothSendMsg) == 4) {
+   else if (bluetoothSendMsgStr[1] == 4) {
     HeadR();
     SerialBT.println("Tête droite");
   }
 //Gauche
-  if (traduireDizaine(blueetoothSendMsg) == 3) {
+  else if (bluetoothSendMsgStr[1] == 3) {
     HeadL();
     SerialBT.println("Tête gauche");
   }
 //Pour l'instant je touche pas aux mandibules car normalement il y a deux fonctions fermé et ouverte?
-  if (traduireDizaine(blueetoothSendMsg) == 5) {
+  else if (bluetoothSendMsgStr[1] == 5) {
     Mandibules();
     SerialBT.println("Mandibules");
   }
   
 
     //---------- Fonctionnalité ------------
-    if(traduireCentaine(blueetoothSendMsg) == 1){
+    if(bluetoothSendMsgStr[0] == 1){
         SerialBT.println("Jauuuuune");
     }
-    if(traduireCentaine(blueetoothSendMsg) == 2){
+    else if(bluetoothSendMsgStr[0] == 2){
         SerialBT.println("Vert");
     }
-    if(traduireCentaine(blueetoothSendMsg) == 3){
+    else if(bluetoothSendMsgStr[0] == 3){
         SerialBT.println("Rouge");
     }
-    if(traduireCentaine(blueetoothSendMsg) == 4){
+    else if(bluetoothSendMsgStr[0] == 4){
         SerialBT.println("Blanc");
     }
   
@@ -645,27 +645,3 @@ void pos0G(){
   Dm2.write(posBaseDm2);
   Dm3.write(posBaseDm3);
 }
-
-//Boutton
-int traduireCentaine(int numberCommand){
-    int centaine=numberCommand/100;
-    centaine=centaine%10;
-    return(centaine);
-}
-
-//Tete
-int traduireDizaine(int numberCommand){
-    int dizaine=numberCommand/10;
-    dizaine=dizaine%10;
-    return(dizaine);
-}
-
-//Corps
-int traduireUnite(int numberCommand){
-    int unite = numberCommand%10;
-    return(unite);
-}
-    delay(10);
-  }
-}
-
