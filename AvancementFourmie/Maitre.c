@@ -190,7 +190,7 @@ void loop() {
     if (!avancerD) {
       avancerG();
     } else {      
-      Maitre.print(bluetoothSendMsgStr[0];);
+      Maitre.print("1;");
       SerialBT.println("Envoi info autre servo");   
       avancerG();
     }
@@ -202,29 +202,30 @@ void loop() {
     if (!reculerD) { 
       reculerG();
     } else {
-      Maitre.print("reculer;");    
+      Maitre.print("2;");    
       reculerG();
     }
   }
-//Droite
-  else if (bluetoothSendMsgStr[0] == 4){
-    if (!droiteD) { 
-      droiteG();
-    } else { 
-      Maitre.print("droite;");     
-      droiteG();
-    }
-  }
+
 //Gauche
   else if (bluetoothSendMsgStr[0] == 3){
     if (!gaucheD) { 
       gaucheG();
     } else { 
-      Maitre.print("gauche;");     
+      Maitre.print("3;");     
       gaucheG();
     }
   }
   
+  //Droite
+  else if (bluetoothSendMsgStr[0] == 4){
+    if (!droiteD) { 
+      droiteG();
+    } else { 
+      Maitre.print("4;");     
+      droiteG();
+    }
+  }
     //-------------- Tête --------------------
 //Haute
   if (bluetoothSendMsgStr[1] == 1) {
