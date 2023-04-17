@@ -186,7 +186,7 @@ void loop() {
 
     //------------- Mouvement du corps --------------
 //Avancer
-  if (bluetoothSendMsgStr[0] == 1) {
+  if (bluetoothSendMsgStr[2] == 1) {
     if (!avancerD) {
       avancerG();
     } else {      
@@ -197,7 +197,7 @@ void loop() {
   }
 
 //Reculer
-  else if (bluetoothSendMsgStr[0] == 2){
+  else if (bluetoothSendMsgStr[2] == 2){
 
     if (!reculerD) { 
       reculerG();
@@ -208,7 +208,7 @@ void loop() {
   }
 
 //Gauche
-  else if (bluetoothSendMsgStr[0] == 3){
+  else if (bluetoothSendMsgStr[2] == 3){
     if (!gaucheD) { 
       gaucheG();
     } else { 
@@ -218,7 +218,7 @@ void loop() {
   }
   
   //Droite
-  else if (bluetoothSendMsgStr[0] == 4){
+  else if (bluetoothSendMsgStr[2] == 4){
     if (!droiteD) { 
       droiteG();
     } else { 
@@ -255,16 +255,16 @@ void loop() {
   
 
     //---------- Fonctionnalité ------------
-    if(bluetoothSendMsgStr[2] == 1){
+    if(bluetoothSendMsgStr[0] == 1){
         SerialBT.println("Jauuuuune");
     }
-    else if(bluetoothSendMsgStr[2] == 2){
+    else if(bluetoothSendMsgStr[0] == 2){
         SerialBT.println("Vert");
     }
-    else if(bluetoothSendMsgStr[2] == 3){
+    else if(bluetoothSendMsgStr[0] == 3){
         SerialBT.println("Rouge");
     }
-    else if(bluetoothSendMsgStr[2] == 4){
+    else if(bluetoothSendMsgStr[0] == 4){
         SerialBT.println("Blanc");
     }
   
