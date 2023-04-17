@@ -136,8 +136,7 @@ void loop() {
       moveLegDar(); 
       moveGLegGm();
     }
-    else if(recu=="pos0"){
-      Serial.println("je me replace");
+    else if(recu == "0
       pos0D();
     }
     delay(vitesse);
