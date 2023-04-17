@@ -7,9 +7,7 @@
 
 BluetoothSerial SerialBT;
 const String deviceName = "FourmiLOL";
-String blueetoothSendMsgStr;
-char blueetoothSendMsgChar[4];
-int blueetoothSendMsg;
+String bluetoothSendMsgStr;
 
 
 //setup le port 2 comme maitre (envoyer des informations)
@@ -45,7 +43,6 @@ Servo H3;
 #define pinServoGar2 18
 #define pinServoGar3 19
 
-
 //Mise en place servo moteur pour la tête
 #define pinServoH1 2
 #define pinServoH2 15
@@ -68,7 +65,9 @@ int avancerD = 0;
 int gaucheD = 0;
 int droiteD = 0;
 int reculerD = 0;
-int vitesse = 40;
+
+int vitesse = 50;
+
 
 int test=0;
 
@@ -86,6 +85,7 @@ int posBaseGar3=165;
 
 //indice pour mouvement Mandibules
 int indiceM = 0;
+
 
 //indices pour position tete
 int posBaseH1 = 135; // 0 côté vert, max 180, min 60 => gauche droite
@@ -140,7 +140,7 @@ void setup() {
   H1.attach(pinServoH1, 500, 2400);
   H2.attach(pinServoH2, 500, 2400);
   H3.attach(pinServoH3, 500, 2400);
-  
+
   //-------------------position de base des pattes au démarrage--------------------
   Gav1.write(posBaseGav1);
   Gav2.write(posBaseGav2);
@@ -167,99 +167,107 @@ void setup() {
 void loop() {
     //---------------- Reception Bluetooth -----------
   if (SerialBT.available()) {
-    blueetoothSendMsgStr = SerialBT.readStringUntil(';');
-    blueetoothSendMsgStr.toCharArray(blueetoothSendMsgChar, 4);
-    //blueetoothSendMsg.trim();
+    bluetoothSendMsgStr = SerialBT.readStringUntil(';');
+    bluetoothSendMsg.trim();
     SerialBT.print("Bluetooth : ");
-    SerialBT.println(blueetoothSendMsgStr);
-    blueetoothSendMsg = atoi(blueetoothSendMsgChar);
+    SerialBT.println(bluetoothSendMsgStr);
     
-    if (blueetoothSendMsg!=0){
+    /*if (bluetoothSendMsgStr!=0){
       SerialBT.println("Conversion OK");
     }
     else {  
       SerialBT.println("Conversion Pas OK :(");
-    }
+    }*/
   }
 
     //------------- Mouvement du corps --------------
 //Avancer
-  if (traduireUnite(blueetoothSendMsg) == 1) {
+  if (bluetoothSendMsgStr[2] == 1) {
     if (!avancerD) {
       avancerG();
     } else {      
-      Maitre.print("avancer;");
+      Maitre.print("1;");
       SerialBT.println("Envoi info autre servo");   
       avancerG();
     }
   }
+
 //Reculer
-  if (traduireUnite(blueetoothSendMsg) == 2){
+  else if (bluetoothSendMsgStr[2] == 2){
 
     if (!reculerD) { 
       reculerG();
     } else {
-      Maitre.print("reculer;");    
+      Maitre.print("2;");    
       reculerG();
     }
   }
-//Droite
-  if (traduireUnite(blueetoothSendMsg) == 4){
-    if (!droiteD) { 
-      droiteG();
-    } else { 
-      Maitre.print("droite;");     
-      droiteG();
-    }
-  }
+
 //Gauche
-  if (traduireUnite(blueetoothSendMsg) == 3){
+  else if (bluetoothSendMsgStr[2] == 3){
     if (!gaucheD) { 
       gaucheG();
     } else { 
-      Maitre.print("gauche;");     
+      Maitre.print("3;");     
       gaucheG();
     }
   }
   
+  //Droite
+  else if (bluetoothSendMsgStr[2] == 4){
+    if (!droiteD) { 
+      droiteG();
+    } else { 
+      Maitre.print("4;");     
+      droiteG();
+    }
+  }
+  
+  //Position 0
+  else if (bluetoothSendMsgStr[2] == 0){
+    pos0G();
+    Maitre.print("0;");
+  }
+
     //-------------- Tête --------------------
 //Haute
-  if (traduireDizaine(blueetoothSendMsg) == 1) {
+  if (bluetoothSendMsgStr[1] == 1) {
     HeadUP();
     SerialBT.println("Tête haute");
   }
 //Basse
-  if (traduireDizaine(blueetoothSendMsg) == 2) {
+  else if (bluetoothSendMsgStr[1] == 2) {
     HeadDOWN();
     SerialBT.println("Tête basse");
   }
 //Droite
-  if (traduireDizaine(blueetoothSendMsg) == 4) {
+   else if (bluetoothSendMsgStr[1] == 4) {
     HeadR();
     SerialBT.println("Tête droite");
   }
 //Gauche
-  if (traduireDizaine(blueetoothSendMsg) == 3) {
+  else if (bluetoothSendMsgStr[1] == 3) {
     HeadL();
     SerialBT.println("Tête gauche");
   }
 //Pour l'instant je touche pas aux mandibules car normalement il y a deux fonctions fermé et ouverte?
-  if (traduireDizaine(blueetoothSendMsg) == 5) {
+  else if (bluetoothSendMsgStr[1] == 5) {
     Mandibules();
     SerialBT.println("Mandibules");
   }
+  
 
     //---------- Fonctionnalité ------------
-    if(traduireCentaine(blueetoothSendMsg) == 1){
+    if(bluetoothSendMsgStr[0] == 1){
         SerialBT.println("Jauuuuune");
     }
-    if(traduireCentaine(blueetoothSendMsg) == 2){
+    else if(bluetoothSendMsgStr[0] == 2){
         SerialBT.println("Vert");
     }
-    if(traduireCentaine(blueetoothSendMsg) == 3){
+    else if(bluetoothSendMsgStr[0] == 3){
         SerialBT.println("Rouge");
     }
-    if(traduireCentaine(blueetoothSendMsg) == 4){
+    else if(bluetoothSendMsgStr[0] == 4){
         SerialBT.println("Blanc");
     }
   
@@ -284,9 +292,10 @@ void droiteG(){
 
 //---- CODE pour reculer des pattes "gauches" -----//
 void reculerG(){
-  moveGLegGav();
-  moveDLegDm();
-  moveGLegGar();
+  moveRevLegGav();
+  moveRevLegDm();
+  moveRevLegGar();
+
 }
 
 
@@ -476,6 +485,98 @@ void moveDLegDm() {
 }
 
 
+void moveRevLegGav() {
+  // Rise the leg
+  if (indiceGauch1 <= 10) {
+    Gav3.write(posBaseGav3 + (indiceGauch1 * 2));
+    Gav2.write(posBaseGav2 + (indiceGauch1 * 3));
+    indiceGauch1++;
+  }
+  // Rotate the leg
+  if (indiceGauch2 <= 30) {
+    Gav1.write((posBaseGav1 + 15) - indiceGauch2); //on avance la patte pour le mouvement
+    indiceGauch2++;
+  }
+  // Move back to touch the ground
+  if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
+    Gav3.write(posBaseGav3+20 - (indiceGauch3 * 2));
+    Gav2.write(posBaseGav2+30 - (indiceGauch3 * 3));
+    indiceGauch3++;
+  }
+  // Stance phase - move leg while touching the ground
+  // Rotate back to initial position
+  if (indiceGauch2 >= 30) {
+    Gav1.write((posBaseGav1 - 15) + indiceGauch4);  //Gav1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
+    indiceGauch4++;
+    //ici il envoie l'information de bouger la partie droite!!
+    reculerD = 1;
+  }
+
+  // Reset the counters for repeating the process
+  if (indiceGauch4 >= 30) {
+    Serial.println("Premier cycle fini");
+    indiceGauch1 = 0;
+    indiceGauch2 = 0;
+    indiceGauch3 = 0;
+    indiceGauch4 = 0;
+  }
+  // Each iteration or step is executed in the main loop section where there is also a delay time for controlling the speed of movement
+}
+
+
+void moveRevLegDm() { 
+  //haut
+  if (indiceGauch1 <= 10) {
+    Dm3.write(posBaseDm3 - (indiceGauch1 * 2));
+    Dm2.write(posBaseDm2 - (indiceGauch1 * 3));
+  }
+
+  //rotate ++
+  if (indiceGauch2 <= 30) {
+    Dm1.write(posBaseDm1 + indiceGauch2);
+
+  }
+
+  //bas
+  if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
+    Dm3.write(posBaseDm3-20 + (indiceGauch3 * 2));
+    Dm2.write(posBaseDm2-30 + (indiceGauch3 * 3));
+    Serial.println("bas D");
+  }
+
+  //rotate --
+  if (indiceGauch2 >= 30) {
+    Dm1.write((posBaseDm1 + 30) - indiceGauch4); //Dm1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
+  }
+}
+
+
+void moveRevLegGar() {
+  //rise leg
+  if (indiceGauch1 <= 10) {
+    Gar3.write(posBaseGar3 + (indiceGauch1 * 2));
+    Gar2.write(posBaseGar2 + (indiceGauch1 * 3));
+  }
+  //rotate vers l'avant
+
+  if (indiceGauch2 <= 30) {
+    Gar1.write((posBaseGar1 + 15) - indiceGauch2); //ajouter des degrés à la pos in
+  }
+
+  //en bas
+  if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
+    Gar3.write(posBaseGar3+20 - (indiceGauch3 * 2));
+    Gar2.write(posBaseGar2+30 - (indiceGauch3 * 3));
+    Serial.println("bas G");
+  }
+
+  //rotate vers l'arrière
+  if (indiceGauch2 >= 30) {
+    Gar1.write((posBaseGar1 - 15) + indiceGauch4); //Gar1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
+  } //on retire des degrés à la pos in
+}
+
+
 //Tete
 void HeadUP() {
   if (posBaseH2 >= 90) {
@@ -518,32 +619,29 @@ void HeadL() {
 }
 
 void Mandibules() {
-  for (indiceM = 0; indiceM <= 50; indiceM++) {
+  if (indiceM <= 100) {
     H3.write(posBaseH3 ++);
-    delay(10);
+    indiceM ++;
   }
-  for (indiceM = 0; indiceM <= 50; indiceM++) {
+  
+  if ((100 <= indiceM) && (indiceM <= 200)) {
     H3.write(posBaseH3 --);
-    delay(10);
+    indiceM++;
+  }
+  
+  if (indiceM == 200){
+    indiceM = 0;
   }
 }
 
-//Boutton
-int traduireCentaine(int numberCommand){
-    int centaine=numberCommand/100;
-    centaine=centaine%10;
-    return(centaine);
-}
-
-//Tete
-int traduireDizaine(int numberCommand){
-    int dizaine=numberCommand/10;
-    dizaine=dizaine%10;
-    return(dizaine);
-}
-
-//Corps
-int traduireUnite(int numberCommand){
-    int unite = numberCommand%10;
-    return(unite);
+void pos0G(){
+  Gav1.write(posBaseGav1);
+  Gav2.write(posBaseGav2);
+  Gav3.write(posBaseGav3);
+  Gar1.write(posBaseGar1);
+  Gar2.write(posBaseGar2);
+  Gar3.write(posBaseGar3);
+  Dm1.write(posBaseDm1);
+  Dm2.write(posBaseDm2);
+  Dm3.write(posBaseDm3);
 }
