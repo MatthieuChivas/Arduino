@@ -112,29 +112,25 @@ void loop() {
     recu = Esclave.readStringUntil(';');
     Serial.println(recu);
   
-    if(recu=="avancer"){
-      Serial.println("j'avance");
+    if(recu == "1"){
       moveLegDav();
       moveLegDar();
       moveLegGm();
     }
-    else if(recu=="reculer"){
-      Serial.println("je recule");
+    else if(recu == "2"){
       moveRevLegDav(); 
       moveRevLegDar(); 
       moveRevLegGm();
     }
-    else if(recu=="droite"){
-      Serial.println("je tourne a droite");
-      moveDLegDav(); 
-      moveLegGm();
-      moveDLegDar();
-    }
-    else if(recu=="gauche"){
-      Serial.println("je tourne a gauche");
+    else if(recu == "3"){
       moveLegDav(); 
       moveLegDar(); 
       moveGLegGm();
+    }
+    else if(recu == "4"){
+      moveDLegDav(); 
+      moveLegGm();
+      moveDLegDar();
     }
     delay(vitesse);
   }
