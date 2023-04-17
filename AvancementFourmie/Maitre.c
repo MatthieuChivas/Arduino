@@ -222,6 +222,13 @@ void loop() {
       droiteG();
     }
   }
+  
+  //Position 0
+  else if (bluetoothSendMsgStr[2] == 0){
+    pos0G();
+    Maitre.print("0;");
+  }
+
     //-------------- Tête --------------------
 //Haute
   if (bluetoothSendMsgStr[1] == 1) {
@@ -612,12 +619,29 @@ void HeadL() {
 }
 
 void Mandibules() {
-  for (indiceM = 0; indiceM <= 50; indiceM++) {
+  if (indiceM <= 100) {
     H3.write(posBaseH3 ++);
-    delay(10);
+    indiceM ++;
   }
-  for (indiceM = 0; indiceM <= 50; indiceM++) {
+  
+  if ((100 <= indiceM) && (indiceM <= 200)) {
     H3.write(posBaseH3 --);
-    delay(10);
+    indiceM++;
   }
+  
+  if (indiceM == 200){
+    indiceM = 0;
+  }
+}
+
+void pos0G(){
+  Gav1.write(posBaseGav1);
+  Gav2.write(posBaseGav2);
+  Gav3.write(posBaseGav3);
+  Gar1.write(posBaseGar1);
+  Gar2.write(posBaseGar2);
+  Gar3.write(posBaseGar3);
+  Dm1.write(posBaseDm1);
+  Dm2.write(posBaseDm2);
+  Dm3.write(posBaseDm3);
 }
