@@ -225,9 +225,9 @@ void loop() {
     }
   }
 //Position 0
-  if (traduireUnite(blueetoothSendMsg) == 0){
+  if (bluetoothSendMsgStr[0] == 0){
     pos0G();
-    Maitre.print("pos0;");
+    Maitre.print("0;");
   }  
     //-------------- Tête --------------------
 //Haute
