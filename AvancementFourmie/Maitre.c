@@ -8,8 +8,6 @@
 BluetoothSerial SerialBT;
 const String deviceName = "FourmiLOL";
 String bluetoothSendMsgStr;
-//char bluetoothSendMsgChar[4];
-//int bluetoothSendMsg;
 
 
 //setup le port 2 comme maitre (envoyer des informations)
@@ -170,11 +168,9 @@ void loop() {
     //---------------- Reception Bluetooth -----------
   if (SerialBT.available()) {
     bluetoothSendMsgStr = SerialBT.readStringUntil(';');
-    //bluetoothSendMsgStr.toCharArray(bluetoothSendMsgChar, 4);
     bluetoothSendMsg.trim();
     SerialBT.print("Bluetooth : ");
     SerialBT.println(bluetoothSendMsgStr);
-    //bluetoothSendMsg = atoi(bluetoothSendMsgChar);
     
     /*if (bluetoothSendMsgStr!=0){
       SerialBT.println("Conversion OK");
