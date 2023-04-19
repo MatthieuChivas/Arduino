@@ -243,7 +243,6 @@ void loop() {
     HeadR();
     SerialBT.println("Tête droite");
   }
-=======
 
     if (!reculerD) { 
       reculerG();
