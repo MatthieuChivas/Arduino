@@ -60,6 +60,8 @@ int indiceGauch1 = 0;
 int indiceGauch2 = 0;
 int indiceGauch3 = 0;
 int indiceGauch4 = 0;
+int indiceAttack =0;
+int indiceprepAttack = 0;
 
 int avancerD = 0;
 int gaucheD = 0;
@@ -86,12 +88,23 @@ int posBaseGar3=165;
 //indice pour mouvement Mandibules
 int indiceM = 0;
 
+//indices pour position tete
+int posBaseH1 = 135; // 0 côté vert, max 180, min 60 => gauche droite
+int posBaseH2 = 120; //0 en haut, max 90 et min 170 => haut bas
+int posBaseH3 = 50; // max 100, ouvertes min 0 fermées
 
 //indices pour position tete
 int posBaseH1 = 135; // 0 côté vert, max 180, min 60 => gauche droite
 int posBaseH2 = 120; //0 en haut, max 90 et min 170 => haut bas
 int posBaseH3 = 50; // max 100, ouvertes min 0 fermées
 
+
+//indices pour position tete
+int posBaseH1 = 135; // 0 côté vert, max 180, min 60 => gauche droite
+int posBaseH2 = 120; //0 en haut, max 90 et min 170 => haut bas
+int posBaseH3 = 50; // max 100, ouvertes min 0 fermées
+
+//-------------------------Variables Temporaires ci-dessous------------------------
 
 
 //-------------------------Variables Temporaires ci-dessous------------------------
@@ -194,6 +207,57 @@ void loop() {
 
 //Reculer
   else if (bluetoothSendMsgStr[2] == 2){
+    if (!reculerD) { 
+      reculerG();
+    } else {
+      Maitre.print("2;");    
+      reculerG();
+    }
+  }
+
+//Gauche
+  else if (bluetoothSendMsgStr[2] == 3){
+    if (!gaucheD) { 
+      gaucheG();
+    } else { 
+      Maitre.print("3;");     
+      gaucheG();
+    }
+  }
+  
+  //Droite
+  else if (bluetoothSendMsgStr[2] == 4){
+    if (!droiteD) { 
+      droiteG();
+    } else { 
+      Maitre.print("4;");     
+      droiteG();
+    }
+  }
+  
+  //Position 0
+  else if (bluetoothSendMsgStr[2] == 0){
+    pos0G();
+    Maitre.print("0;");
+  }
+
+    //-------------- Tête --------------------
+//Haute
+  if (bluetoothSendMsgStr[1] == 1) {
+    HeadUP();
+    SerialBT.println("Tête haute");
+  }
+//Basse
+  else if (bluetoothSendMsgStr[1] == 2) {
+    HeadDOWN();
+    SerialBT.println("Tête basse");
+  }
+//Droite
+   else if (bluetoothSendMsgStr[1] == 4) {
+    HeadR();
+    SerialBT.println("Tête droite");
+  }
+=======
 
     if (!reculerD) { 
       reculerG();
@@ -260,9 +324,15 @@ void loop() {
     //---------- Fonctionnalité ------------
     if(bluetoothSendMsgStr[0] == 1){
         SerialBT.println("Jauuuuune");
+        prepareAttack();
+        Maitre.print("prepareAttack;");
+        SerialBT.println("Prepare Attack");
     }
     else if(bluetoothSendMsgStr[0] == 2){
         SerialBT.println("Vert");
+        Attack();
+        Maitre.print("Attack");
+        SerialBT.println("Attack");
     }
     else if(bluetoothSendMsgStr[0] == 3){
         SerialBT.println("Rouge");
@@ -632,6 +702,63 @@ void Mandibules() {
   if (indiceM == 200){
     indiceM = 0;
   }
+}
+
+void prepareAttack()
+{
+  if (indiceprepAttack <= 15 )
+  {
+    //Gav
+    Gav3.write(posBaseGav3 + indiceprepAttack); 
+    Gav2.write(posBaseGav2 + indiceprepAttack);
+
+    //Gar
+    Gar3.write(posBaseGar3 + indiceprepAttack);
+    Gar2.write(posBaseGar2 + indiceprepAttack);
+
+    //Tete
+    H3.write(posBaseH3 - indiceprepAttack );
+    H2.write(posBaseH2 - indiceprepAttack);
+
+    indiceprepAttack++;
+  }
+
+  if (indiceprepAttack <=40)
+  {
+    Dm1.write(posBaseDm1 - indiceprepAttack);
+    Gav1.write(posBaseGav1 + indiceprepAttack);
+    Gar1.write(posBaseGar1 + indiceprepAttack);
+    indiceprepAttack++;
+  }
+
+  
+}
+
+void Attack()
+{
+    if (indiceAttack <=10)
+    {
+      //Gav
+      Gav3.write(posBaseGav3 - indiceAttack * 3);
+      Gav2.write(posBaseGav2 - indiceAttack * 2);
+
+      //Gar
+      Gar3.write(posBaseGar3 - indiceAttack * 2);
+      Gar2.write(posBaseGav2 - indiceAttack * 2);
+
+      //Tete
+      H2.write(posBaseH2 + indiceAttack * 2);
+      H3.write(posBaseH3 + indiceAttack * 3);
+      indiceAttack++;
+    }
+
+    if (indiceAttack <=16)
+    {
+      Dm1.write(posBaseDm1 + indiceAttack * 3);
+      Gav1.write(posBaseGav1 - indiceAttack * 3);
+      Gar1.write(posBaseGar1 - indiceAttack * 2);
+      indiceAttack ++;      
+    }    
 }
 
 void pos0G(){

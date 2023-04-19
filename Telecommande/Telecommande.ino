@@ -40,6 +40,7 @@ int commandD = COMMAND_NO;  // Commande joystick droit
 #define boutonJSG 32
 #define boutonJSD 19
 bool flagBoutonJaune = 0, flagBoutonVert = 0, flagBoutonRouge = 0, flagBoutonBlanc = 0, flagBoutonJSG = 0, flagBoutonJSD = 0;
+bool flagCycleBouton = 0;   // Sert à déterminer si on a déjà lu un bouton lors du cycle, reset à 0 à la fin d'un cycle
 
 // -------------------------------------------------------------- Fin déclarations pour les boutons -------------------------------------------------------------------------------
 
@@ -64,19 +65,19 @@ void IRAM_ATTR interruptBoutonJSD();
 // ----------------------------------------------------------------------- Fin déclarations de fonctions --------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------- Variables globales -------------------------------------------------------------------------------
+int commandesInt;       // Variable qui contient les commandes à envoyer (format int)
+int tableauEnregistrement[1000][2];       // Tableau dans lequel les commandes sont enregistrées
+
 bool flagEnregistrement = 0;              // Lié à l'interruption du bouton rouge
 bool flagClearTableauEnregistrement = 0;  // Lié à l'interruption du bouton rouge
-bool flagFinTableauEnregistrement = 0;    // Lié à l'interruption du bouton rouge
+int positionEcritureTableauX = 0;           // Compte à quel endroit on est dans le tableau en X pour l'enregistrement
+
 bool flagJouerEnregistrement = 0;         // Lié à l'interruption du bouton blanc
-int tableauEnregistrement[1000][2];       // Tableau dans lequel les commandes sont enregistrées
-int comptCommandesEnr = 0;                  // Compteur du nombre de commandes enregistrées
-int positionTableauX = 0;
+int positionLectureTableauX = 0;    // Compte à quel endroit on est dans le tableau en X pour jouer l'enregistrement
+int repetitionCommandes = 0;        // Sert à l'envois de plusieures commandes identiques consécutives
+bool flagPremiereCommande = 0;       // Sert à l'envois des commandes enregistrées
+
 // --------------------------------------------------------------------------- Fin variables globales -----------------------------------------------------------------------------
-
-// -------- Variables temporaire pour debug -----------
-int nbCycles = 0;
-// ------ Fin variables temporaire pour debug --------- 
-
 
 void setup() {
   Serial.begin(115200);
@@ -103,12 +104,12 @@ void setup() {
   pinMode(boutonBlanc, INPUT_PULLUP);
   pinMode(boutonJSG, INPUT_PULLUP);
   pinMode(boutonJSD, INPUT_PULLUP);
-  attachInterrupt(boutonJaune, interruptBoutonJaune, RISING);
-  attachInterrupt(boutonVert, interruptBoutonVert, RISING);
-  attachInterrupt(boutonRouge, interruptBoutonRouge, RISING);
-  attachInterrupt(boutonBlanc, interruptBoutonBlanc, RISING);
-  attachInterrupt(boutonJSG, interruptBoutonJSG, RISING);
-  attachInterrupt(boutonJSD, interruptBoutonJSD, RISING);
+  attachInterrupt(boutonJaune, interruptBoutonJaune, FALLING);
+  attachInterrupt(boutonVert, interruptBoutonVert, FALLING);
+  attachInterrupt(boutonRouge, interruptBoutonRouge, FALLING);
+  attachInterrupt(boutonBlanc, interruptBoutonBlanc, FALLING);
+  attachInterrupt(boutonJSG, interruptBoutonJSG, FALLING);
+  attachInterrupt(boutonJSD, interruptBoutonJSD, FALLING);
   // Fin boutons en interruption
 
   // Initialisation DEL
@@ -121,79 +122,79 @@ void setup() {
   digitalWrite(delVert, HIGH);
   digitalWrite(delRouge, HIGH);
   digitalWrite(delBlanc, HIGH);
-  digitalWrite(delBleu, HIGH);
+  digitalWrite(delBleu, LOW);   // Allumer la DEL bleu pour indiquer que l'initialisation est complétée
   // Fin initialisation DEL
 
 } // Fin setup()
 
 void loop() {
-// Code principal
-  int commandesInt = LectureCommandes();
-  String commandesStr = String(commandesInt);      // Convertir commandesInt en commandesStr  
-  SerialBT.print(String(commandesStr + ";"));   //Envoyer les commandes par BT (; à la fin de la commande pour filtrage à la réception)
-
-
-  if(flagClearTableauEnregistrement == 1){  // Reset les données du tableau à 0, comme ça au prochain flagEnregistrement == 1, il recommence à 0
-    for(int x=0; x<1000; x++){                 // Initialiser toutes les données du tableau à 0
-      for(int y=0; y<2; y++){
-          tableauEnregistrement[x][y] = 0;
-      }
-    }
-    flagClearTableauEnregistrement = 0;
-    comptCommandesEnr = 0;              // Reset le nombre de commandes enregistrées
-    positionTableauX = 0;                // Reset la position dans le tableau d'enregistrement en X    
-  }
   
-  if(flagEnregistrement == 1){
-    tableauEnregistrement[positionTableauX][0] = commandesInt; // Enregistrer la commande dans un tableau
-    comptCommandesEnr++;
+  commandesInt = LectureCommandes();        // Lire les commandes de la télécommande et formatter les informations dans un int
+
+  if(flagEnregistrement == 1){    // Lors de l'enregistrement, chaque commandes lues (fonction LectureCommandes()) sont enregistrées 
+
+    if(flagClearTableauEnregistrement == 1){  // Reset les données du tableau à 0, comme ça au prochain flagEnregistrement == 1, il recommence à 0
+      for(int x=0; x<1000; x++){                 // Initialiser toutes les données du tableau: 999 en X et 0 en Y
+        for(int y=0; y<2; y++){
+          if(y == 0){
+            tableauEnregistrement[x][y] = 999;
+          }
+          else{
+            tableauEnregistrement[x][y] = 0;
+          }
+        }
+      }
+      flagClearTableauEnregistrement = 0;
+      positionEcritureTableauX = 0;               // Reset la position dans le tableau d'enregistrement en X    
+    }
+
+    if(tableauEnregistrement[positionEcritureTableauX][0] == 999){  // S'il n'y a aucune commande dans la case du tableau, on peut y écrire notre commande (999 est une case vide)
+      tableauEnregistrement[positionEcritureTableauX][0] = commandesInt;  // Écrire la commande dans le tableau
+      tableauEnregistrement[positionEcritureTableauX][1] = (tableauEnregistrement[positionEcritureTableauX][1]) + 1;   // Augmenter de 1 la case sous celle de la commande (répétitions)
+    }
+    else if(tableauEnregistrement[positionEcritureTableauX][0] == commandesInt){     // Si la commande est la même que la dernière qui a été enregistrée
+      tableauEnregistrement[positionEcritureTableauX][1] = (tableauEnregistrement[positionEcritureTableauX][1]) + 1;   // Augmenter de 1 la case sous celle de la commande (répétitions)
+    }    
+    else if(tableauEnregistrement[positionEcritureTableauX][0] != commandesInt){    // Si la commande est différente que la dernière qui a été enregistrée
+      positionEcritureTableauX++;   // Aller à la prochaine case en X
+      tableauEnregistrement[positionEcritureTableauX][0] = commandesInt;  // Écrire la commande dans le tableau
+      tableauEnregistrement[positionEcritureTableauX][1] = (tableauEnregistrement[positionEcritureTableauX][1]) + 1;   // Augmenter de 1 la case sous celle de la commande (répétitions)
+    }
+  }   // L'enregistrement se termine quand on presse le bouton rouge une deuxième fois (flagEnregistrement==0)
+
+  if(flagJouerEnregistrement == 1){      // Jouer l'enregistrement (si l'enregistrement est arrêté et que le bouton blanc est pressé)
+    if(repetitionCommandes == 0 && flagPremiereCommande == 1){        // La première commande envoyée est traitée différemment
+      commandesInt = tableauEnregistrement[positionLectureTableauX][0];
+      repetitionCommandes = tableauEnregistrement[positionLectureTableauX][1];
+      flagPremiereCommande = 0;
+    }
+    else if(repetitionCommandes == 0 && flagPremiereCommande == 0){        // Quand une commande a été envoyé le bon nombre de fois, on passe à la prochaine
+      positionLectureTableauX++;
+      commandesInt = tableauEnregistrement[positionLectureTableauX][0];
+      repetitionCommandes = tableauEnregistrement[positionLectureTableauX][1];
+    }
+
+    if(commandesInt == 999){    // Quand on lis une commande 999, c'est que l'enregistrement est terminé
+      commandesInt = 0;   // Envoyer la commande 0 (ne rien faire)
+      flagJouerEnregistrement = 0;  // Arrêter de jouer la commande
+      digitalWrite(delBlanc, HIGH); // Éteindre la DEL blanche
+    }
     
+    if(repetitionCommandes > 0){    // Si la commande est la même que la précédente, on réenvoie la commande et on décrémente le compteur de répétition
+      commandesInt = tableauEnregistrement[positionLectureTableauX][0];
+      repetitionCommandes--;
+    }    
   }
 
-  if(flagFinTableauEnregistrement == 1){  // Déclenché à la fin de l'enregistrement, metttre commande 999 à la fin du tableau
-      tableauEnregistrement[comptCommandesEnr][0] = 999;
-      flagFinTableauEnregistrement = 0;
-  }
+  String commandesStr = String(commandesInt);   // Convertir commandesInt en commandesStr  
+  SerialBT.print(String(commandesStr + ";"));   //Envoyer les commandes par BT (; à la fin de la commande pour filtrage à la réception)
+  Serial.println(commandesInt); // Imprimer la commande envoyée par BT au terminal
 
-
-  if(flagEnregistrement == 0){
-    
-
-
-
-    
-  }
-
-
-
-
-    // Traiter commandesInt selon les DEL à illuminer
-      // Si commandesInt = boutonRouge (enregistrement), il faut mettre commandesInt dans un tableau (effacer les données du tableau complet avant écriture, nouvel enregistement écrase l'ancien)
-        // Si commandesInt = boutonBlanc (playback), il faut lire les infos du tableau, les convertir en commandesStr
-
-
-
-// Fin code principal
-
-// Communication Bluetooth - Terminal
-  /*if (Serial.available()) {
-    SerialBT.write(Serial.read());   // Envoyer ce qu'on écrit au terminal par bluetooth
-  }
-  if (SerialBT.available()) {
-    Serial.println(SerialBT.readString());  //Écrire ce qu'on reçoit par bluetooth au terminal
-  }
- //delay(20);
- */
-// Fin communication Bluetooth - Terminal
-
-// Temporaire pour debug
-  Serial.print("fin cycle: ");
-  Serial.println(nbCycles);
-    Serial.println(commandesInt);
-  nbCycles++;
-// Fin temporaire pour debug  
-
-delay(1000);
+  flagCycleBouton = 0;    // Reset le flag pour permettre la lecture d'un bouton
+  digitalWrite(delJaune, HIGH);  // Éteindre DEL jaune et verte si elles sont allumées
+  digitalWrite(delVert, HIGH);
+  
+  delay(500);     // Délais d'envois des commandes
 } // Fin loop()
 
 
@@ -300,146 +301,102 @@ int LectureCommandes(){
     commandesFormatInt = commandesFormatInt + 600;
     flagBoutonJSD = 0;
   }
-      // Si aucun flag == 1, alors les centaines restent à 0
+      // Si aucun flag == 1, alors les centaines restent à 0, un seul flag de bouton peut être == 1 par cycle
   //----------------------------------------------------------------------------- Fin lecture des boutons
 
-  //commandesFormatInt = 123; // Pour test, return toujours la commande 123
   return commandesFormatInt;
 }   // Fin LectureCommandes()
 
 
     // Fonctions d'interruptions activées quand on presse un bouton (si on presse un bouton, les flags des autres sont reset pour qu'une seule fonction de bouton soit active en même temps)
 void IRAM_ATTR interruptBoutonJaune(){
-  flagBoutonJaune = 1;
-  flagBoutonVert  = 0;
-  flagBoutonRouge = 0;
-  flagBoutonBlanc = 0;
-  flagBoutonJSG   = 0;
-  flagBoutonJSD   = 0;
+  if(flagCycleBouton == 0){
+    flagBoutonJaune = 1;
+    flagBoutonVert  = 0;
+    flagBoutonRouge = 0;
+    flagBoutonBlanc = 0;
+    flagBoutonJSG   = 0;
+    flagBoutonJSD   = 0;
+    flagCycleBouton = 1;
+    digitalWrite(delJaune, LOW);  // Allumer la DEL jaune
+  }
 }
 void IRAM_ATTR interruptBoutonVert(){
-  flagBoutonJaune = 0;
-  flagBoutonVert  = 1;
-  flagBoutonRouge = 0;
-  flagBoutonBlanc = 0;
-  flagBoutonJSG   = 0;
-  flagBoutonJSD   = 0;
+  if(flagCycleBouton == 0){
+    flagBoutonJaune = 0;
+    flagBoutonVert  = 1;
+    flagBoutonRouge = 0;
+    flagBoutonBlanc = 0;
+    flagBoutonJSG   = 0;
+    flagBoutonJSD   = 0;
+    flagCycleBouton = 1;
+    digitalWrite(delVert, LOW);  // Allumer la DEL verte
+  }
 }
 void IRAM_ATTR interruptBoutonRouge(){
-  flagBoutonJaune = 0;
-  flagBoutonVert  = 0;
-  flagBoutonRouge = 1;
-  flagBoutonBlanc = 0;
-  flagBoutonJSG   = 0;
-  flagBoutonJSD   = 0;
+  if(flagCycleBouton == 0){
+    flagBoutonJaune = 0;
+    flagBoutonVert  = 0;
+    flagBoutonRouge = 1;
+    flagBoutonBlanc = 0;
+    flagBoutonJSG   = 0;
+    flagBoutonJSD   = 0;
+    flagCycleBouton = 1;
 
-  if(flagEnregistrement == 0){    // flagEnregistrement: 1 = enregistrer, 0 = ne pas enregistrer
-    flagEnregistrement = 1;
-    flagClearTableauEnregistrement = 1;
-    digitalWrite(delRouge, LOW);  // Allumer la DEL rouge
-  }
-  else{
-    flagEnregistrement = 0;
-    flagFinTableauEnregistrement = 1;
-    digitalWrite(delRouge, HIGH);  // Éteindre la DEL rouge
+    if(flagEnregistrement == 0 && flagJouerEnregistrement == 0){    // flagEnregistrement: 1 = enregistrer, 0 = ne pas enregistrer
+      flagEnregistrement = 1;
+      flagClearTableauEnregistrement = 1;
+      digitalWrite(delRouge, LOW);  // Allumer la DEL rouge
+    }
+    else if(flagEnregistrement == 1){
+      flagEnregistrement = 0;
+      digitalWrite(delRouge, HIGH);  // Éteindre la DEL rouge
+    }
   }
 }
 void IRAM_ATTR interruptBoutonBlanc(){
-  flagBoutonJaune = 0;
-  flagBoutonVert  = 0;
-  flagBoutonRouge = 0;
-  flagBoutonBlanc = 1;
-  flagBoutonJSG   = 0;
-  flagBoutonJSD   = 0;
-
-  if(flagJouerEnregistrement == 0){    // flagJouerEnregistrement: 1 = jouer l'enregistrement, 0 = ne pas jouer l'enregistrement
-    flagJouerEnregistrement = 1;
-    digitalWrite(delBlanc, LOW);  // Allumer la DEL blanche
+  if(flagCycleBouton == 0){
+    flagBoutonJaune = 0;
+    flagBoutonVert  = 0;
+    flagBoutonRouge = 0;
+    flagBoutonBlanc = 1;
+    flagBoutonJSG   = 0;
+    flagBoutonJSD   = 0;
+    flagCycleBouton = 1;
+  
+    if(flagJouerEnregistrement == 0 && flagEnregistrement == 0){    // jouer l'enregistrement si on n'est pas en train d'enregistrer
+      flagJouerEnregistrement = 1;
+      positionLectureTableauX = 0;    // Reset d'où on commence à lire le tableau (0 est le début)
+      repetitionCommandes = 0;
+      flagPremiereCommande = 1;       // Indiquer qu'on commence la lecture du tableauEnregistrement
+      digitalWrite(delBlanc, LOW);  // Allumer la DEL blanche
+    }
+    else if(flagJouerEnregistrement == 1){
+      flagJouerEnregistrement = 0;
+      digitalWrite(delBlanc, HIGH);  // Éteindre la DEL blanche
+    }  
   }
-  else{
-    flagJouerEnregistrement = 0;
-    digitalWrite(delBlanc, HIGH);  // Éteindre la DEL blanche
-  }  
 }
-void IRAM_ATTR interruptBoutonJSG(){    // Les boutons JSG et JSD n'on pas de fonctions définis, leur interrupt ne fait rien
-  /*flagBoutonJaune = 0;
-  flagBoutonVert  = 0;
-  flagBoutonRouge = 0;
-  flagBoutonBlanc = 0;
-  flagBoutonJSG   = 1;
-  flagBoutonJSD   = 0;*/
+void IRAM_ATTR interruptBoutonJSG(){    // Les boutons JSG et JSD n'ont pas de fonctions définies, leur interrupts ne font rien
+  /*if(flagCycleBouton == 0){
+    flagBoutonJaune = 0;
+    flagBoutonVert  = 0;
+    flagBoutonRouge = 0;
+    flagBoutonBlanc = 0;
+    flagBoutonJSG   = 1;
+    flagBoutonJSD   = 0;
+    flagCycleBouton = 1;
+  }*/
 }
 void IRAM_ATTR interruptBoutonJSD(){
-  /*flagBoutonJaune = 0;
-  flagBoutonVert  = 0;
-  flagBoutonRouge = 0;
-  flagBoutonBlanc = 0;
-  flagBoutonJSG   = 0;
-  flagBoutonJSD   = 1;*/
+  /*if(flagCycleBouton == 0){
+    flagBoutonJaune = 0;
+    flagBoutonVert  = 0;
+    flagBoutonRouge = 0;
+    flagBoutonBlanc = 0;
+    flagBoutonJSG   = 0;
+    flagBoutonJSD   = 1;
+    flagCycleBouton = 1;
+  }*/
 }
 // ------------------------------------------------------------------------------ Fin fonctions -----------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*        // Test pour Interruptions sur GPIO
-#define pushButton_pin 16
-#define LED_pin 2
-
-void IRAM_ATTR toggleLED()
-{
-  digitalWrite(LED_pin, !digitalRead(LED_pin));
-}
-
-void setup()
-{
-  pinMode(LED_pin, OUTPUT);
-  pinMode(pushButton_pin, INPUT_PULLUP);
-  attachInterrupt(pushButton_pin, toggleLED, RISING);
-} 
-void loop()
-{
-}
-*/
-
-
-
-
-/*        // Test pour Pullup resistor sur GPIO
-#define boutonJaune 16
-bool varBoutonJaune;
-
-void setup() {
-  Serial.begin(115200);
-        // gpio 16 bouton pullup actif à 0
-    pinMode(boutonJaune, INPUT_PULLUP);
-
-}
-
-void loop() {
-    varBoutonJaune = digitalRead(boutonJaune);
-    Serial.println(varBoutonJaune);
-}
-*/
