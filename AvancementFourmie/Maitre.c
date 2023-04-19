@@ -167,7 +167,7 @@ void loop() {
     //---------------- Reception Bluetooth -----------
   if (SerialBT.available()) {
     bluetoothSendMsgStr = SerialBT.readStringUntil(';');
-    bluetoothSendMsg.trim();
+    bluetoothSendMsgStr.trim();
     SerialBT.print("Bluetooth : ");
     SerialBT.println(bluetoothSendMsgStr);
     
