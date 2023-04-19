@@ -7,9 +7,8 @@
 
 BluetoothSerial SerialBT;
 const String deviceName = "FourmiLOL";
-String blueetoothSendMsgStr;
-char blueetoothSendMsgChar[4];
-int blueetoothSendMsg;
+String bluetoothSendMsgStr;
+
 
 
 //setup le port 2 comme maitre (envoyer des informations)
@@ -90,12 +89,19 @@ int posBaseGar3=165;
 //indice pour mouvement Mandibules
 int indiceM = 0;
 
+//indices pour position tete
+int posBaseH1 = 135; // 0 côté vert, max 180, min 60 => gauche droite
+int posBaseH2 = 120; //0 en haut, max 90 et min 170 => haut bas
+int posBaseH3 = 50; // max 100, ouvertes min 0 fermées
 
 //indices pour position tete
 int posBaseH1 = 135; // 0 côté vert, max 180, min 60 => gauche droite
 int posBaseH2 = 120; //0 en haut, max 90 et min 170 => haut bas
 int posBaseH3 = 50; // max 100, ouvertes min 0 fermées
 
+
+
+//-------------------------Variables Temporaires ci-dessous------------------------
 
 
 //-------------------------Variables Temporaires ci-dessous------------------------
@@ -171,105 +177,113 @@ void setup() {
 void loop() {
     //---------------- Reception Bluetooth -----------
   if (SerialBT.available()) {
-    blueetoothSendMsgStr = SerialBT.readStringUntil(';');
-    blueetoothSendMsgStr.toCharArray(blueetoothSendMsgChar, 4);
-    //blueetoothSendMsg.trim();
+    bluetoothSendMsgStr = SerialBT.readStringUntil(';');
+    bluetoothSendMsg.trim();
     SerialBT.print("Bluetooth : ");
-    SerialBT.println(blueetoothSendMsgStr);
-    blueetoothSendMsg = atoi(blueetoothSendMsgChar);
+    SerialBT.println(bluetoothSendMsgStr);
     
-    if (blueetoothSendMsg!=0){
+    /*if (bluetoothSendMsgStr!=0){
       SerialBT.println("Conversion OK");
     }
     else {  
       SerialBT.println("Conversion Pas OK :(");
-    }
+    }*/
   }
 
     //------------- Mouvement du corps --------------
 //Avancer
-  if (traduireUnite(blueetoothSendMsg) == 1) {
+  if (bluetoothSendMsgStr[2] == 1) {
     if (!avancerD) {
       avancerG();
     } else {      
-      Maitre.print("avancer;");
+      Maitre.print("1;");
       SerialBT.println("Envoi info autre servo");   
       avancerG();
     }
   }
 
 //Reculer
-  if (traduireUnite(blueetoothSendMsg) == 2){
-
+  else if (bluetoothSendMsgStr[2] == 2){
     if (!reculerD) { 
       reculerG();
     } else {
-      Maitre.print("reculer;");    
+      Maitre.print("2;");    
       reculerG();
     }
   }
-//Droite
-  if (traduireUnite(blueetoothSendMsg) == 4){
-    if (!droiteD) { 
-      droiteG();
-    } else { 
-      Maitre.print("droite;");     
-      droiteG();
-    }
-  }
+
 //Gauche
-  if (traduireUnite(blueetoothSendMsg) == 3){
+  else if (bluetoothSendMsgStr[2] == 3){
     if (!gaucheD) { 
       gaucheG();
     } else { 
-      Maitre.print("gauche;");     
+      Maitre.print("3;");     
       gaucheG();
     }
   }
   
+  //Droite
+  else if (bluetoothSendMsgStr[2] == 4){
+    if (!droiteD) { 
+      droiteG();
+    } else { 
+      Maitre.print("4;");     
+      droiteG();
+    }
+  }
+  
+  //Position 0
+  else if (bluetoothSendMsgStr[2] == 0){
+    pos0G();
+    Maitre.print("0;");
+  }
+
     //-------------- Tête --------------------
 //Haute
-  if (traduireDizaine(blueetoothSendMsg) == 1) {
+  if (bluetoothSendMsgStr[1] == 1) {
     HeadUP();
     SerialBT.println("Tête haute");
   }
 //Basse
-  if (traduireDizaine(blueetoothSendMsg) == 2) {
+  else if (bluetoothSendMsgStr[1] == 2) {
     HeadDOWN();
     SerialBT.println("Tête basse");
   }
 //Droite
-  if (traduireDizaine(blueetoothSendMsg) == 4) {
+   else if (bluetoothSendMsgStr[1] == 4) {
+>>>>>>> MatthieuChivas-patch-1
     HeadR();
     SerialBT.println("Tête droite");
   }
 //Gauche
-  if (traduireDizaine(blueetoothSendMsg) == 3) {
+  else if (bluetoothSendMsgStr[1] == 3) {
     HeadL();
     SerialBT.println("Tête gauche");
   }
 //Pour l'instant je touche pas aux mandibules car normalement il y a deux fonctions fermé et ouverte?
-  if (traduireDizaine(blueetoothSendMsg) == 5) {
+  else if (bluetoothSendMsgStr[1] == 5) {
     Mandibules();
     SerialBT.println("Mandibules");
   }
   
 
     //---------- Fonctionnalité ------------
-    if(traduireCentaine(blueetoothSendMsg) == 1){
+    if(bluetoothSendMsgStr[0] == 1){
+        SerialBT.println("Jauuuuune");
         prepareAttack();
         Maitre.print("prepareAttack;");
         SerialBT.println("Prepare Attack");
     }
-    if(traduireCentaine(blueetoothSendMsg) == 2){
-      Attack();
-      Maitre.print("Attack");
-      SerialBT.println("Attack");
+    else if(bluetoothSendMsgStr[0] == 2){
+        SerialBT.println("Vert");
+        Attack();
+        Maitre.print("Attack");
+        SerialBT.println("Attack");
     }
-    if(traduireCentaine(blueetoothSendMsg) == 3){
+    else if(bluetoothSendMsgStr[0] == 3){
         SerialBT.println("Rouge");
     }
-    if(traduireCentaine(blueetoothSendMsg) == 4){
+    else if(bluetoothSendMsgStr[0] == 4){
         SerialBT.println("Blanc");
     }
   
@@ -622,44 +636,19 @@ void HeadL() {
 
 void Mandibules() {
   if (indiceM <= 100) {
-    H3.write(posBaseH3++);
-    indiceM++;
-    Serial.println(posBaseH3);
-    Serial.println(indiceM);
+    H3.write(posBaseH3 ++);
+    indiceM ++;
   }
   
-  if ((indiceM >= 100) && (indiceM <= 200)) {
-    H3.write(posBaseH3--);
+  if ((100 <= indiceM) && (indiceM <= 200)) {
+    H3.write(posBaseH3 --);
     indiceM++;
-    Serial.println(posBaseH3);
-    Serial.println(indiceM);
   }
   
   if (indiceM == 200){
     indiceM = 0;
-    Serial.println(posBaseH3);
-    Serial.println(indiceM);
+
   }
-}
-
-//Boutton
-int traduireCentaine(int numberCommand){
-    int centaine=numberCommand/100;
-    centaine=centaine%10;
-    return(centaine);
-}
-
-//Tete
-int traduireDizaine(int numberCommand){
-    int dizaine=numberCommand/10;
-    dizaine=dizaine%10;
-    return(dizaine);
-}
-
-//Corps
-int traduireUnite(int numberCommand){
-    int unite = numberCommand%10;
-    return(unite);
 }
 
 void prepareAttack()
@@ -721,6 +710,14 @@ void Attack()
 
 }
 
-
-
-
+void pos0G(){
+  Gav1.write(posBaseGav1);
+  Gav2.write(posBaseGav2);
+  Gav3.write(posBaseGav3);
+  Gar1.write(posBaseGar1);
+  Gar2.write(posBaseGar2);
+  Gar3.write(posBaseGar3);
+  Dm1.write(posBaseDm1);
+  Dm2.write(posBaseDm2);
+  Dm3.write(posBaseDm3);
+}
