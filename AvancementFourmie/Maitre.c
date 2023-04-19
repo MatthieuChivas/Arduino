@@ -167,7 +167,6 @@ void loop() {
     //---------------- Reception Bluetooth -----------
   if (SerialBT.available()) {
     bluetoothSendMsgStr = SerialBT.readStringUntil(';');
-    //bluetoothSendMsgStr.trim();
     SerialBT.print("Bluetooth : ");
     SerialBT.println(bluetoothSendMsgStr);
     
@@ -181,7 +180,7 @@ void loop() {
 
     //------------- Mouvement du corps --------------
 //Avancer
-  if (bluetoothSendMsgStr[2] == "1") {
+  if (bluetoothSendMsgStr[2] == 1) {
     if (!avancerD) {
       avancerG();
     } else {      
@@ -192,7 +191,7 @@ void loop() {
   }
 
 //Reculer
-  else if (bluetoothSendMsgStr[2] == "2"){
+  else if (bluetoothSendMsgStr[2] == 2){
     if (!reculerD) { 
       reculerG();
     } else {
@@ -202,7 +201,7 @@ void loop() {
   }
 
 //Gauche
-  else if (bluetoothSendMsgStr[2] == "3"){
+  else if (bluetoothSendMsgStr[2] == 3){
     if (!gaucheD) { 
       gaucheG();
     } else { 
@@ -212,7 +211,7 @@ void loop() {
   }
   
   //Droite
-  else if (bluetoothSendMsgStr[2] == "4"){
+  else if (bluetoothSendMsgStr[2] == 4){
     if (!droiteD) { 
       droiteG();
     } else { 
@@ -222,57 +221,57 @@ void loop() {
   }
   
   //Position 0
-  else if (bluetoothSendMsgStr[2] == "0"){
+  else if (bluetoothSendMsgStr[2] == 0){
     pos0G();
     Maitre.print("0;");
   }
 
     //-------------- Tête --------------------
 //Haute
-  if (bluetoothSendMsgStr[1] == "1") {
+  if (bluetoothSendMsgStr[1] == 1) {
     HeadUP();
     SerialBT.println("Tête haute");
   }
 //Basse
-  else if (bluetoothSendMsgStr[1] == "2") {
+  else if (bluetoothSendMsgStr[1] == 2) {
     HeadDOWN();
     SerialBT.println("Tête basse");
   }
   
 //Droite
-   else if (bluetoothSendMsgStr[1] == "4") {
+   else if (bluetoothSendMsgStr[1] == 4) {
     HeadR();
     SerialBT.println("Tête droite");
   }
 //Gauche
-  else if (bluetoothSendMsgStr[1] == "3") {
+  else if (bluetoothSendMsgStr[1] == 3) {
     HeadL();
     SerialBT.println("Tête gauche");
   }
 //Pour l'instant je touche pas aux mandibules car normalement il y a deux fonctions fermé et ouverte?
-  else if (bluetoothSendMsgStr[1] == "5") {
+  else if (bluetoothSendMsgStr[1] == 5) {
     Mandibules();
     SerialBT.println("Mandibules");
   }
   
 
     //---------- Fonctionnalité ------------
-    if(bluetoothSendMsgStr[0] == "1"){
+    if(bluetoothSendMsgStr[0] == 1){
         SerialBT.println("Jauuuuune");
         prepareAttack();
         Maitre.print("prepareAttack;");
         SerialBT.println("Prepare Attack");
     }
-    else if(bluetoothSendMsgStr[0] == "2"){
+    else if(bluetoothSendMsgStr[0] == 2){
         SerialBT.println("Vert");
         Attack();
         Maitre.print("Attack");
         SerialBT.println("Attack");
     }
-    else if(bluetoothSendMsgStr[0] == "3"){
+    else if(bluetoothSendMsgStr[0] == 3){
         SerialBT.println("Rouge");
     }
-    else if(bluetoothSendMsgStr[0] == "4"){
+    else if(bluetoothSendMsgStr[0] == 4){
         SerialBT.println("Blanc");
     }
   
