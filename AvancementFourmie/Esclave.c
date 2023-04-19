@@ -37,9 +37,10 @@ int indiceDroit1 = 0;
 int indiceDroit2 = 0;
 int indiceDroit3 = 0;
 int indiceDroit4 = 0;
-
-
+int indiceAttack = 0;
+int indiceprepAttack = 0;
 int vitesse=40;
+
 
 int posBaseDav1=90;
 int posBaseDav2=35;
@@ -117,6 +118,15 @@ void loop() {
       moveLegDar();
       moveLegGm();
     }
+
+    else if (recu =="prepareAttack"){
+      prepareAttack();                  
+    }
+
+    else if (recu =="Attack"){
+      Attack();      
+    }
+    
     else if(recu == "2"){
       moveRevLegDav(); 
       moveRevLegDar(); 
@@ -280,8 +290,7 @@ void moveDLegDav(){
     indiceDroit3 = 0;
     indiceDroit4 = 0;
   }
-  // Each iteration or step is executed in the main loop section where there is also a delay time for controlling the speed of movement
-}
+
 
 void moveDLegDar() {
   //rise leg
@@ -303,6 +312,84 @@ void moveDLegDar() {
 
   //rotate vers l'arrière
   if (indiceDroit2 >= 30) {
+
+    Dar1.write((posBaseDar1-30) + indiceDroit4);  //Gar1 est à sa (posBase-30) pcq elle est à la position avancée. On la rétracte vers sa posBase (+30)
+  }
+}
+
+void moveLegGm() {
+  //haut
+  if (indiceDroit1 <= 10) {
+    Gm3.write(posBaseGm3 + (indiceDroit1*2));
+    Gm2.write(posBaseGm2 + (indiceDroit1*3));
+  }
+
+  //rotate ++
+  if (indiceDroit2 <= 30) {
+    Gm1.write(posBaseGm1 + indiceDroit2);
+
+  }
+
+  //bas
+  if (indiceDroit2 > 20 & indiceDroit3 <= 10) {
+    Gm3.write(posBaseGm3+20 - (indiceDroit3*2));
+    Gm2.write(posBaseGm2+30 - (indiceDroit3*3));
+  }
+
+  //rotate --
+  if (indiceDroit2 >= 30) {
+    Gm1.write((posBaseGm1+30) - indiceDroit4);  //Dm1 est à sa (posBase-30) pcq elle est à la position avancée. On la rétracte vers sa posBase (+30)
+  }
+}
+
+void prepareAttack()
+{
+  if (indiceprepAttack <=15 )
+  {
+    //Dav
+    Dav3.write(posBaseDav3 - indiceprepAttack);
+    Dav2.write(posBaseDav2 - indiceprepAttack);
+
+    //Dar
+    Dar3.write(posBaseDar3 + indiceprepAttack);
+    Dar2.write(posBaseDar2 + indiceprepAttack);
+
+    indiceprepAttack++;
+  }
+
+  if (indiceprepAttack <=40)
+  {
+    Gm1.write(posBaseGm1 + indiceprepAttack);
+    Dav1.write(posBaseDav1 - indiceprepAttack);
+    Dar1.write(posBaseDar1 - (indiceprepAttack));
+    indiceprepAttack++;
+  }
+}
+
+void Attack()
+{
+  if (indiceAttack <=10)
+    {
+    //Dav
+    Dav3.write(posBaseDav3 + indiceAttack * 2);
+    Dav2.write(posBaseDav2 + indiceAttack * 3);
+
+    //Dar
+    Dar3.write(posBaseDar3 + indiceAttack * 2);
+    Dar2.write(posBaseDar2 + indiceAttack * 3);
+    indiceAttack ++;
+    }
+  
+  if (indiceAttack <=16)
+  {
+    Gm1.write(posBaseGm1 - indiceAttack * 3);
+    Dav1.write(posBaseDav1 + indiceAttack * 3);
+    Dar1.write(posBaseDar1 + indiceAttack * 2);
+    indiceAttack ++;
+  }
+  
+}
+
     Dar1.write((posBaseDar1+30) - indiceDroit4);  //Gar1 est à sa (posBase-30) pcq elle est à la position avancée. On la rétracte vers sa posBase (+30)
   }
 }
@@ -399,3 +486,4 @@ void pos0D(){
   Gm2.write(posBaseGm2);
   Gm3.write(posBaseGm3);
 }
+
