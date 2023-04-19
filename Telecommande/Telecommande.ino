@@ -65,6 +65,7 @@ void IRAM_ATTR interruptBoutonJSD();
 // ----------------------------------------------------------------------- Fin déclarations de fonctions --------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------- Variables globales -------------------------------------------------------------------------------
+int commandesInt;       // Variable qui contient les commandes à envoyer (format int)
 int tableauEnregistrement[1000][2];       // Tableau dans lequel les commandes sont enregistrées
 
 bool flagEnregistrement = 0;              // Lié à l'interruption du bouton rouge
@@ -128,24 +129,25 @@ void setup() {
 
 void loop() {
   
-  int commandesInt = LectureCommandes();        // Lire les commandes de la télécommande et formatter les informations dans un int
+  commandesInt = LectureCommandes();        // Lire les commandes de la télécommande et formatter les informations dans un int
 
-  if(flagClearTableauEnregistrement == 1){  // Reset les données du tableau à 0, comme ça au prochain flagEnregistrement == 1, il recommence à 0
-    for(int x=0; x<1000; x++){                 // Initialiser toutes les données du tableau: 999 en X et 0 en Y
-      for(int y=0; y<2; y++){
-        if(y == 0){
-          tableauEnregistrement[x][y] = 999;
-        }
-        else{
-          tableauEnregistrement[x][y] = 0;
+  if(flagEnregistrement == 1){    // Lors de l'enregistrement, chaque commandes lues (fonction LectureCommandes()) sont enregistrées 
+
+    if(flagClearTableauEnregistrement == 1){  // Reset les données du tableau à 0, comme ça au prochain flagEnregistrement == 1, il recommence à 0
+      for(int x=0; x<1000; x++){                 // Initialiser toutes les données du tableau: 999 en X et 0 en Y
+        for(int y=0; y<2; y++){
+          if(y == 0){
+            tableauEnregistrement[x][y] = 999;
+          }
+          else{
+            tableauEnregistrement[x][y] = 0;
+          }
         }
       }
+      flagClearTableauEnregistrement = 0;
+      positionEcritureTableauX = 0;               // Reset la position dans le tableau d'enregistrement en X    
     }
-    flagClearTableauEnregistrement = 0;
-    positionEcritureTableauX = 0;               // Reset la position dans le tableau d'enregistrement en X    
-  }
-  
-  if(flagEnregistrement == 1){    // Lors de l'enregistrement, chaque commandes lues (fonction LectureCommandes()) sont enregistrées 
+
     if(tableauEnregistrement[positionEcritureTableauX][0] == 999){  // S'il n'y a aucune commande dans la case du tableau, on peut y écrire notre commande (999 est une case vide)
       tableauEnregistrement[positionEcritureTableauX][0] = commandesInt;  // Écrire la commande dans le tableau
       tableauEnregistrement[positionEcritureTableauX][1] = (tableauEnregistrement[positionEcritureTableauX][1]) + 1;   // Augmenter de 1 la case sous celle de la commande (répétitions)
