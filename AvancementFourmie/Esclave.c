@@ -1,708 +1,401 @@
-//Serveur Bluetooth Fourmi
-#include "BluetoothSerial.h"
-#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
-#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
-#endif
-#include <ESP32Servo.h>
+#include <ESP32Servo.h> 
 
-BluetoothSerial SerialBT;
-const String deviceName = "FourmiLOL";
-String bluetoothSendMsgStr;
-
-
-//setup le port 2 comme maitre (envoyer des informations)
-HardwareSerial Maitre(2);
+HardwareSerial Esclave(1);
 
 //--SERVOO--
-Servo Gav1;
-Servo Gav2;
-Servo Gav3;
+Servo Dav1;
+Servo Dav2;
+Servo Dav3;
 
-Servo Dm1;
-Servo Dm2;
-Servo Dm3;
+Servo Gm1;
+Servo Gm2;
+Servo Gm3;
 
-Servo Gar1;
-Servo Gar2;
-Servo Gar3;
+Servo Dar1;
+Servo Dar2;
+Servo Dar3;
 
-Servo H1;
-Servo H2;
-Servo H3;
+//Mise en place servo moteur GM/DAV/DAR
+#define pinServoDav1 5
+#define pinServoDav2 17
+#define pinServoDav3 16
 
-//Mise en place servo moteur GAV/GARR/DM1
-#define pinServoGav1 4
-#define pinServoGav2 16
-#define pinServoGav3 17
+#define pinServoGm1 27
+#define pinServoGm2 14
+#define pinServoGm3 12
 
-#define pinServoDm1 25
-#define pinServoDm2 33
-#define pinServoDm3 32
+#define pinServoDar1 4
+#define pinServoDar2 2
+#define pinServoDar3 15
 
-#define pinServoGar1 5
-#define pinServoGar2 18
-#define pinServoGar3 19
-
-//Mise en place servo moteur pour la tête
-#define pinServoH1 2
-#define pinServoH2 15
-#define pinServoH3 13
-
-
-//define les Pin qu'on va utilier pour transmettre des informations
-//Tx : transmetteur doit être branché sur un receveur de l'autre ESP32
-//Rx : receveur doit être branché sur un transmetteur de l'autre ESP32
+// put your setup code here, to run once:
 #define SenderTxPin 22
 #define SenderRxPin 23
 
 //indice pour avancement des pattes gauches
-int indiceGauch1 = 0;
-int indiceGauch2 = 0;
-int indiceGauch3 = 0;
-int indiceGauch4 = 0;
-int indiceAttack =0;
-int indiceprepAttack = 0;
-
-int avancerD = 0;
-int gaucheD = 0;
-int droiteD = 0;
-int reculerD = 0;
-
-int vitesse = 50;
+int indiceDroit1 = 0;
+int indiceDroit2 = 0;
+int indiceDroit3 = 0;
+int indiceDroit4 = 0;
 
 
-int test=0;
+int vitesse=40;
 
-int posBaseGav1=110;
-int posBaseGav2=145;
-int posBaseGav3=165;
+int posBaseDav1=90;
+int posBaseDav2=35;
+int posBaseDav3=15;
   
-int posBaseDm1=95;
-int posBaseDm2=35;
-int posBaseDm3=15;
+int posBaseGm1=100;
+int posBaseGm2=150;
+int posBaseGm3=165;
 
-int posBaseGar1=85;
-int posBaseGar2=145;
-int posBaseGar3=165;
+int posBaseDar1=110;
+int posBaseDar2=35;
+int posBaseDar3=15;
 
-//indice pour mouvement Mandibules
-int indiceM = 0;
-
-//indices pour position tete
-int posBaseH1 = 135; // 0 côté vert, max 180, min 60 => gauche droite
-int posBaseH2 = 120; //0 en haut, max 90 et min 170 => haut bas
-int posBaseH3 = 50; // max 100, ouvertes min 0 fermées
-
-//-------------------------Variables Temporaires ci-dessous------------------------
+String recu;
 
 void setup() {
-  //initialise console
   Serial.begin(115200);
   Serial.println("---Demarrage de la fourmi---");
+  Esclave.begin(115200,SERIAL_8N1,SenderTxPin,SenderRxPin);
 
-  //initialise quel Pin va être utilisé
-  Maitre.begin(115200, SERIAL_8N1, SenderTxPin, SenderRxPin);
-
-  // Démarrage du bluetooth
-  SerialBT.begin(deviceName);
-  
-  //Initialise les servomoteurs :
+  //setup moteur 
   ESP32PWM::allocateTimer(0);
   ESP32PWM::allocateTimer(1);
   ESP32PWM::allocateTimer(2);
   ESP32PWM::allocateTimer(3);
   
-  Gav1.setPeriodHertz(50);
-  Gav2.setPeriodHertz(50);
-  Gav3.setPeriodHertz(50);
+  Dav1.setPeriodHertz(50);
+  Dav2.setPeriodHertz(50);
+  Dav3.setPeriodHertz(50);
   
-  Dm1.setPeriodHertz(50);
-  Dm2.setPeriodHertz(50);
-  Dm3.setPeriodHertz(50);
+  Gm1.setPeriodHertz(50);
+  Gm2.setPeriodHertz(50);
+  Gm3.setPeriodHertz(50);
   
-  Gar1.setPeriodHertz(50);
-  Gar2.setPeriodHertz(50);
-  Gar3.setPeriodHertz(50);
+  Dar1.setPeriodHertz(50);
+  Dar2.setPeriodHertz(50);
+  Dar3.setPeriodHertz(50);
   
-  Gav1.attach(pinServoGav1, 500, 2400);
-  Gav2.attach(pinServoGav2, 500, 2400);
-  Gav3.attach(pinServoGav3, 500, 2400);
+  Dav1.attach(pinServoDav1,500,2400);
+  Dav2.attach(pinServoDav2,500,2400);
+  Dav3.attach(pinServoDav3,500,2400);
 
-  Dm1.attach(pinServoDm1, 500, 2400);
-  Dm2.attach(pinServoDm2, 500, 2400);
-  Dm3.attach(pinServoDm3, 500, 2400);
+  Gm1.attach(pinServoGm1,500,2400);
+  Gm2.attach(pinServoGm2,500,2400);
+  Gm3.attach(pinServoGm3,500,2400);
 
-  Gar1.attach(pinServoGar1, 500, 2400);
-  Gar2.attach(pinServoGar2, 500, 2400);
-  Gar3.attach(pinServoGar3, 500, 2400);
-
-  H1.attach(pinServoH1, 500, 2400);
-  H2.attach(pinServoH2, 500, 2400);
-  H3.attach(pinServoH3, 500, 2400);
+  Dar1.attach(pinServoDar1,500,2400);
+  Dar2.attach(pinServoDar2,500,2400);
+  Dar3.attach(pinServoDar3,500,2400);
 
   //-------------------position de base des pattes au démarrage--------------------
-  Gav1.write(posBaseGav1);
-  Gav2.write(posBaseGav2);
-  Gav3.write(posBaseGav3);
+  Dav1.write(posBaseDav1);
+  Dav2.write(posBaseDav2);
+  Dav3.write(posBaseDav3);
 
-  Dm1.write(posBaseDm1);
-  Dm2.write(posBaseDm2);
-  Dm3.write(posBaseDm3);
+  Gm1.write(posBaseGm1);
+  Gm2.write(posBaseGm2);
+  Gm3.write(posBaseGm3);
 
-  Gar1.write(posBaseGar1);
-  Gar2.write(posBaseGar2);
-  Gar3.write(posBaseGar3);
-
-  H1.write(posBaseH1);
-  H2.write(posBaseH2);
-  H3.write(posBaseH3);
-  
-  Serial.println("Starting Loop in 3 sec");
-  delay(3000);
+  Dar1.write(posBaseDar1);
+  Dar2.write(posBaseDar2);
+  Dar3.write(posBaseDar3);
 }
-
 
 
 void loop() {
-    //---------------- Reception Bluetooth -----------
-  if (SerialBT.available()) {
-    bluetoothSendMsgStr = SerialBT.readStringUntil(';');
-    SerialBT.print("Bluetooth : ");
-    SerialBT.println(bluetoothSendMsgStr);
-    
-    /*if (bluetoothSendMsgStr!=0){
-      SerialBT.println("Conversion OK");
-    }
-    else {  
-      SerialBT.println("Conversion Pas OK :(");
-    }*/
-  }
 
-    //------------- Mouvement du corps --------------
-//Avancer
-  if (bluetoothSendMsgStr[2] == 1) {
-    if (!avancerD) {
-      avancerG();
-    } else {      
-      Maitre.print("1;");
-      SerialBT.println("Envoi info autre servo");   
-      avancerG();
-    }
-  }
+  while(Esclave.available()){
 
-//Reculer
-  else if (bluetoothSendMsgStr[2] == 2){
-    if (!reculerD) { 
-      reculerG();
-    } else {
-      Maitre.print("2;");    
-      reculerG();
-    }
-  }
-
-//Gauche
-  else if (bluetoothSendMsgStr[2] == 3){
-    if (!gaucheD) { 
-      gaucheG();
-    } else { 
-      Maitre.print("3;");     
-      gaucheG();
-    }
-  }
+    recu = Esclave.readStringUntil(';');
+    Serial.println(recu);
   
-  //Droite
-  else if (bluetoothSendMsgStr[2] == 4){
-    if (!droiteD) { 
-      droiteG();
-    } else { 
-      Maitre.print("4;");     
-      droiteG();
+    if(recu == "1"){
+      moveLegDav();
+      moveLegDar();
+      moveLegGm();
     }
-  }
-  
-  //Position 0
-  else if (bluetoothSendMsgStr[2] == 0){
-    pos0G();
-    Maitre.print("0;");
-  }
-
-    //-------------- Tête --------------------
-//Haute
-  if (bluetoothSendMsgStr[1] == 1) {
-    HeadUP();
-    SerialBT.println("Tête haute");
-  }
-//Basse
-  else if (bluetoothSendMsgStr[1] == 2) {
-    HeadDOWN();
-    SerialBT.println("Tête basse");
-  }
-  
-//Droite
-   else if (bluetoothSendMsgStr[1] == 4) {
-    HeadR();
-    SerialBT.println("Tête droite");
-  }
-//Gauche
-  else if (bluetoothSendMsgStr[1] == 3) {
-    HeadL();
-    SerialBT.println("Tête gauche");
-  }
-//Pour l'instant je touche pas aux mandibules car normalement il y a deux fonctions fermé et ouverte?
-  else if (bluetoothSendMsgStr[1] == 5) {
-    Mandibules();
-    SerialBT.println("Mandibules");
-  }
-  
-
-    //---------- Fonctionnalité ------------
-    if(bluetoothSendMsgStr[0] == 1){
-        SerialBT.println("Jauuuuune");
-        prepareAttack();
-        Maitre.print("prepareAttack;");
-        SerialBT.println("Prepare Attack");
+    else if(recu == "2"){
+      moveRevLegDav(); 
+      moveRevLegDar(); 
+      moveRevLegGm();
     }
-    else if(bluetoothSendMsgStr[0] == 2){
-        SerialBT.println("Vert");
-        Attack();
-        Maitre.print("Attack");
-        SerialBT.println("Attack");
+    else if(recu == "3"){
+      moveLegDav(); 
+      moveLegDar(); 
+      moveGLegGm();
     }
-    else if(bluetoothSendMsgStr[0] == 3){
-        SerialBT.println("Rouge");
+    else if(recu == "4"){
+      moveDLegDav(); 
+      moveLegGm();
+      moveDLegDar();
     }
-    else if(bluetoothSendMsgStr[0] == 4){
-        SerialBT.println("Blanc");
-    }
-  
-  delay(vitesse);
-}
+    else if(recu == "0"){
+      pos0D();
+      }
+    delay(vitesse);
+  }
 
-//---- CODE pour tourner à gauche des pattes "gauches" ----//
-void gaucheG(){
-  moveGLegGav();
-  moveLegDm();
-  moveGLegGar();
-
-}
-
-//---- CODE pour tourner à droite des pattes "gauches" ----//
-void droiteG(){
-  moveLegGav();
-  moveDLegDm();  
-  moveLegGar();
-}
-
-
-//---- CODE pour reculer des pattes "gauches" -----//
-void reculerG(){
-  moveRevLegGav();
-  moveRevLegDm();
-  moveRevLegGar();
-
-}
-
-
-
-// ----- CODE pour avancer des pates "gauches" ----//
-void avancerG() {
-  
-  moveLegGav();
-  moveLegDm();
-  moveLegGar();
-  
 }
 
 //C'est cette patte qui donne le rythme
-void moveLegGav() {
+void moveLegDav(){
   // Rise the leg
-  if (indiceGauch1 <= 10) {
-    Gav3.write(posBaseGav3 + (indiceGauch1*2));
-    Gav2.write(posBaseGav2 + (indiceGauch1*3));
-    indiceGauch1++;
+  if (indiceDroit1 <= 10) {
+    Dav3.write(posBaseDav3 - (indiceDroit1*2));
+    Dav2.write(posBaseDav2 - (indiceDroit1*3));
+    indiceDroit1++;
   }
   // Rotate the leg
-  if (indiceGauch2 <= 30) {
-    Gav1.write(posBaseGav1 + indiceGauch2);
-    indiceGauch2++;
+  if (indiceDroit2 <= 30) {
+    Dav1.write(posBaseDav1 - indiceDroit2);
+    indiceDroit2++;
   }
   // Move back to touch the ground
-  if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
-    Gav3.write(posBaseGav3+20 - (indiceGauch3*2));
-    Gav2.write(posBaseGav2+30 - (indiceGauch3*3));
-    indiceGauch3++;
+  if (indiceDroit2 > 20 & indiceDroit3 <= 10) {
+    Dav3.write(posBaseDav3-20 + (indiceDroit3*2));
+    Dav2.write(posBaseDav2-30 + (indiceDroit3*3));
+    indiceDroit3++;
   }
   // Stance phase - move leg while touching the ground
   // Rotate back to initial position
-  if (indiceGauch2 >= 30) {
-    Gav1.write((posBaseGav1+30) - indiceGauch4);    //Gav1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
-    indiceGauch4++;
-    //ici il envoie l'information de bouger la droite!!
-    avancerD = 1;
-    droiteD = 1;
+  if (indiceDroit2 >= 30) {
+    Dav1.write((posBaseDav1-30) + indiceDroit4);  //Dav1 est à sa (posBase-30) pcq elle est à la position avancée. On la rétracte vers sa posBase (+30)
+    indiceDroit4++;
   }
-  
   // Reset the counters for repeating the process
-  if (indiceGauch4 >= 30) {
-    indiceGauch1 = 0;
-    indiceGauch2 = 0;
-    indiceGauch3 = 0;
-    indiceGauch4 = 0;
+  if (indiceDroit4 >= 30) {
+    indiceDroit1 = 0;
+    indiceDroit2 = 0;
+    indiceDroit3 = 0;
+    indiceDroit4 = 0;
   }
   // Each iteration or step is executed in the main loop section where there is also a delay time for controlling the speed of movement
 }
 
-void moveLegGar() {
+void moveLegDar() {
   //rise leg
-  if (indiceGauch1 <= 10) {
-    Gar3.write(posBaseGar3 + (indiceGauch1*2));
-    Gar2.write(posBaseGar2 + (indiceGauch1*3));
+  if (indiceDroit1 <= 10) {
+    Dar3.write(posBaseDar3 - (indiceDroit1*2));
+    Dar2.write(posBaseDar2 - (indiceDroit1*3));
   }
 
   //rotate vers l'avant
-  if (indiceGauch2 <= 30) {
-    Gar1.write(posBaseGar1 + indiceGauch2);
+  if (indiceDroit2 <= 30) {
+    Dar1.write(posBaseDar1 - indiceDroit2);
   }
 
   //en bas
-  if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
-    Gar3.write(posBaseGar3+20 - (indiceGauch3*2));
-    Gar2.write(posBaseGar2+30 - (indiceGauch3*3));
+  if (indiceDroit2 > 20 & indiceDroit3 <= 10) {
+    Dar3.write(posBaseDar3-20 + (indiceDroit3*2));
+    Dar2.write(posBaseDar2-30 + (indiceDroit3*3));
   }
 
   //rotate vers l'arrière
-  if (indiceGauch2 >= 30) {
-    Gar1.write((posBaseGar1+30) - indiceGauch4);  //Gar1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
+  if (indiceDroit2 >= 30) {
+    Dar1.write((posBaseDar1-30) + indiceDroit4);  //Gar1 est à sa (posBase-30) pcq elle est à la position avancée. On la rétracte vers sa posBase (+30)
   }
 }
 
-void moveLegDm() {
+void moveLegGm() {
   //haut
-  if (indiceGauch1 <= 10) {
-    Dm3.write(posBaseDm3 - (indiceGauch1*2));
-    Dm2.write(posBaseDm2 - (indiceGauch1*3));
+  if (indiceDroit1 <= 10) {
+    Gm3.write(posBaseGm3 + (indiceDroit1*2));
+    Gm2.write(posBaseGm2 + (indiceDroit1*3));
   }
 
   //rotate ++
-  if (indiceGauch2 <= 30) {
-    Dm1.write(posBaseDm1 - indiceGauch2);
+  if (indiceDroit2 <= 30) {
+    Gm1.write(posBaseGm1 + indiceDroit2);
 
   }
 
   //bas
-  if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
-    Dm3.write(posBaseDm3-20 + (indiceGauch3*2));
-    Dm2.write(posBaseDm2-30 + (indiceGauch3*3));
+  if (indiceDroit2 > 20 & indiceDroit3 <= 10) {
+    Gm3.write(posBaseGm3+20 - (indiceDroit3*2));
+    Gm2.write(posBaseGm2+30 - (indiceDroit3*3));
   }
 
   //rotate --
-  if (indiceGauch2 >= 30) {
-    Dm1.write((posBaseDm1-30) + indiceGauch4);  //Dm1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
+  if (indiceDroit2 >= 30) {
+    Gm1.write((posBaseGm1+30) - indiceDroit4);  //Dm1 est à sa (posBase-30) pcq elle est à la position avancée. On la rétracte vers sa posBase (+30)
   }
 }
 
-void moveGLegGav() {
+void moveGLegGm() {
+  //haut
+  if (indiceDroit1 <= 10) {
+    Gm3.write(posBaseGm3 + (indiceDroit1*2));
+    Gm2.write(posBaseGm2 + (indiceDroit1*3));
+  }
+
+  //rotate --
+  if (indiceDroit2 <= 30) {
+    Gm1.write(posBaseGm1 - indiceDroit2);
+
+  }
+
+  //bas
+  if (indiceDroit2 > 20 & indiceDroit3 <= 10) {
+    Gm3.write(posBaseGm3+20 - (indiceDroit3 * 2));
+    Gm2.write(posBaseGm2+30 - (indiceDroit3 * 3));
+  }
+
+  //rotate ++
+  if (indiceDroit2 >= 30) {
+    Gm1.write((posBaseGm1-30) + indiceDroit4);  //Dm1 est à sa (posBase-30) pcq elle est à la position avancée. On la rétracte vers sa posBase (+30)
+  }
+}
+
+void moveDLegDav(){
   // Rise the leg
-  if (indiceGauch1 <= 10) {
-    Gav3.write(posBaseGav3 + (indiceGauch1 * 2));
-    Gav2.write(posBaseGav2 + (indiceGauch1 * 3));
-    indiceGauch1++;
+  if (indiceDroit1 <= 10) {
+    Dav3.write(posBaseDav3 - (indiceDroit1*2));
+    Dav2.write(posBaseDav2 - (indiceDroit1*3));
+    indiceDroit1++;
   }
   // Rotate the leg
-  if (indiceGauch2 <= 30) {
-    Gav1.write(posBaseGav1 - indiceGauch2); //on rajoute des degrés à la pos in 30=>60
-    indiceGauch2++;
+  if (indiceDroit2 <= 30) {
+    Dav1.write(posBaseDav1 + indiceDroit2);
+    indiceDroit2++;
   }
   // Move back to touch the ground
-  if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
-    Gav3.write(posBaseGav3+20 - (indiceGauch3 * 2));
-    Gav2.write(posBaseGav2+30 - (indiceGauch3 * 3));
-    indiceGauch3++;
+  if (indiceDroit2 > 20 & indiceDroit3 <= 10) {
+    Dav3.write(posBaseDav3-20 + (indiceDroit3*2));
+    Dav2.write(posBaseDav2-30 + (indiceDroit3*3));
+    indiceDroit3++;
   }
   // Stance phase - move leg while touching the ground
   // Rotate back to initial position
-  if (indiceGauch2 >= 30) {
-    Gav1.write((posBaseGav1 - 30) + indiceGauch4);  //Gav1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
-    indiceGauch4++;
-    //ici il envoie l'information de bouger la partie droite!!
-    gaucheD = 1;
-    reculerD = 1;
+  if (indiceDroit2 >= 30) {
+    Dav1.write((posBaseDav1+30) - indiceDroit4);  //Dav1 est à sa (posBase-30) pcq elle est à la position avancée. On la rétracte vers sa posBase (+30)
+    indiceDroit4++;
   }
-
   // Reset the counters for repeating the process
-  if (indiceGauch4 >= 30) {
-    indiceGauch1 = 0;
-    indiceGauch2 = 0;
-    indiceGauch3 = 0;
-    indiceGauch4 = 0;
+  if (indiceDroit4 >= 30) {
+    indiceDroit1 = 0;
+    indiceDroit2 = 0;
+    indiceDroit3 = 0;
+    indiceDroit4 = 0;
   }
   // Each iteration or step is executed in the main loop section where there is also a delay time for controlling the speed of movement
 }
 
-void moveGLegGar() {
+void moveDLegDar() {
   //rise leg
-  if (indiceGauch1 <= 10) {
-    Gar3.write(posBaseGar3 + (indiceGauch1 * 2));
-    Gar2.write(posBaseGar2 + (indiceGauch1 * 3));
+  if (indiceDroit1 <= 10) {
+    Dar3.write(posBaseDar3 - (indiceDroit1*2));
+    Dar2.write(posBaseDar2 - (indiceDroit1*3));
   }
-  //rotate vers l'avant
 
-  if (indiceGauch2 <= 30) {
-    Gar1.write(posBaseGar1 - indiceGauch2); //ajouter des degrés à la pos in
+  //rotate vers l'avant
+  if (indiceDroit2 <= 30) {
+    Dar1.write(posBaseDar1 + indiceDroit2);
   }
 
   //en bas
-  if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
-    Gar3.write(posBaseGar3+20 - (indiceGauch3 * 2));
-    Gar2.write(posBaseGar2+30 - (indiceGauch3 * 3));
+  if (indiceDroit2 > 20 & indiceDroit3 <= 10) {
+    Dar3.write(posBaseDar3-20 + (indiceDroit3*2));
+    Dar2.write(posBaseDar2-30 + (indiceDroit3*3));
   }
 
   //rotate vers l'arrière
-  if (indiceGauch2 >= 30) {
-    Gar1.write((posBaseGar1 - 30) + indiceGauch4); //Gar1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
-  } //on retire des degrés à la pos in
-}
-
-void moveDLegDm() {
-  //haut
-  if (indiceGauch1 <= 10) {
-    Dm3.write(posBaseDm3 - (indiceGauch1 * 2));
-    Dm2.write(posBaseDm2 - (indiceGauch1 * 3));
-  }
-
-  //rotate ++
-  if (indiceGauch2 <= 30) {
-    Dm1.write(posBaseDm1 + indiceGauch2);
-
-  }
-
-  //bas
-  if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
-    Dm3.write(posBaseDm3-20 + (indiceGauch3 * 2));
-    Dm2.write(posBaseDm2-30 + (indiceGauch3 * 3));
-  }
-
-  //rotate --
-  if (indiceGauch2 >= 30) {
-    Dm1.write((posBaseDm1 + 30) - indiceGauch4); //Dm1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
+  if (indiceDroit2 >= 30) {
+    Dar1.write((posBaseDar1+30) - indiceDroit4);  //Gar1 est à sa (posBase-30) pcq elle est à la position avancée. On la rétracte vers sa posBase (+30)
   }
 }
 
-
-void moveRevLegGav() {
+void moveRevLegDav(){ 
   // Rise the leg
-  if (indiceGauch1 <= 10) {
-    Gav3.write(posBaseGav3 + (indiceGauch1 * 2));
-    Gav2.write(posBaseGav2 + (indiceGauch1 * 3));
-    indiceGauch1++;
+  if (indiceDroit1 <= 10) {
+    Dav3.write(posBaseDav3 - (indiceDroit1*2));
+    Dav2.write(posBaseDav2 - (indiceDroit1*3));
+    indiceDroit1++;
   }
   // Rotate the leg
-  if (indiceGauch2 <= 30) {
-    Gav1.write((posBaseGav1 + 15) - indiceGauch2); //on avance la patte pour le mouvement
-    indiceGauch2++;
+  if (indiceDroit2 <= 30) {
+    Dav1.write((posBaseDav1 - 15) + indiceDroit2);
+    indiceDroit2++;
   }
   // Move back to touch the ground
-  if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
-    Gav3.write(posBaseGav3+20 - (indiceGauch3 * 2));
-    Gav2.write(posBaseGav2+30 - (indiceGauch3 * 3));
-    indiceGauch3++;
+  if (indiceDroit2 > 20 & indiceDroit3 <= 10) {
+    Dav3.write(posBaseDav3-20 + (indiceDroit3*2));
+    Dav2.write(posBaseDav2-30 + (indiceDroit3*3));
+    indiceDroit3++;
   }
   // Stance phase - move leg while touching the ground
   // Rotate back to initial position
-  if (indiceGauch2 >= 30) {
-    Gav1.write((posBaseGav1 - 15) + indiceGauch4);  //Gav1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
-    indiceGauch4++;
-    //ici il envoie l'information de bouger la partie droite!!
-    reculerD = 1;
+  if (indiceDroit2 >= 30) {
+    Dav1.write((posBaseDav1 + 15) - indiceDroit4);  //Dav1 est à sa (posBase-30) pcq elle est à la position avancée. On la rétracte vers sa posBase (+30)
+    indiceDroit4++;
   }
-
   // Reset the counters for repeating the process
-  if (indiceGauch4 >= 30) {
-    Serial.println("Premier cycle fini");
-    indiceGauch1 = 0;
-    indiceGauch2 = 0;
-    indiceGauch3 = 0;
-    indiceGauch4 = 0;
+  if (indiceDroit4 >= 30) {
+    indiceDroit1 = 0;
+    indiceDroit2 = 0;
+    indiceDroit3 = 0;
+    indiceDroit4 = 0;
   }
   // Each iteration or step is executed in the main loop section where there is also a delay time for controlling the speed of movement
 }
 
-
-void moveRevLegDm() { 
-  //haut
-  if (indiceGauch1 <= 10) {
-    Dm3.write(posBaseDm3 - (indiceGauch1 * 2));
-    Dm2.write(posBaseDm2 - (indiceGauch1 * 3));
+void moveRevLegDar() {
+  //rise leg
+  if (indiceDroit1 <= 10) {
+    Dar3.write(posBaseDar3 - (indiceDroit1*2));
+    Dar2.write(posBaseDar2 - (indiceDroit1*3));
   }
 
-  //rotate ++
-  if (indiceGauch2 <= 30) {
-    Dm1.write(posBaseDm1 + indiceGauch2);
+  //rotate vers l'avant
+  if (indiceDroit2 <= 30) {
+    Dar1.write((posBaseDar1 - 15) + indiceDroit2);
+  }
+
+  //en bas
+  if (indiceDroit2 > 20 & indiceDroit3 <= 10) {
+    Dar3.write(posBaseDar3-20 + (indiceDroit3*2));
+    Dar2.write(posBaseDar2-30 + (indiceDroit3*3));
+  }
+
+  //rotate vers l'arrière
+  if (indiceDroit2 >= 30) {
+    Dar1.write((posBaseDar1+ 15) - indiceDroit4);  //Gar1 est à sa (posBase-30) pcq elle est à la position avancée. On la rétracte vers sa posBase (+30)
+  }
+}
+void moveRevLegGm() {
+  //haut
+  if (indiceDroit1 <= 10) {
+    Gm3.write(posBaseGm3 + (indiceDroit1*2));
+    Gm2.write(posBaseGm2 + (indiceDroit1*3));
+  }
+
+  //rotate --
+  if (indiceDroit2 <= 30) {
+    Gm1.write(posBaseGm1 - indiceDroit2);
 
   }
 
   //bas
-  if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
-    Dm3.write(posBaseDm3-20 + (indiceGauch3 * 2));
-    Dm2.write(posBaseDm2-30 + (indiceGauch3 * 3));
-    Serial.println("bas D");
+  if (indiceDroit2 > 20 & indiceDroit3 <= 10) {
+    Gm3.write(posBaseGm3+20 - (indiceDroit3 * 2));
+    Gm2.write(posBaseGm2+30 - (indiceDroit3 * 3));
   }
 
-  //rotate --
-  if (indiceGauch2 >= 30) {
-    Dm1.write((posBaseDm1 + 30) - indiceGauch4); //Dm1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
-  }
-}
-
-
-void moveRevLegGar() {
-  //rise leg
-  if (indiceGauch1 <= 10) {
-    Gar3.write(posBaseGar3 + (indiceGauch1 * 2));
-    Gar2.write(posBaseGar2 + (indiceGauch1 * 3));
-  }
-  //rotate vers l'avant
-
-  if (indiceGauch2 <= 30) {
-    Gar1.write((posBaseGar1 + 15) - indiceGauch2); //ajouter des degrés à la pos in
-  }
-
-  //en bas
-  if (indiceGauch2 > 20 & indiceGauch3 <= 10) {
-    Gar3.write(posBaseGar3+20 - (indiceGauch3 * 2));
-    Gar2.write(posBaseGar2+30 - (indiceGauch3 * 3));
-    Serial.println("bas G");
-  }
-
-  //rotate vers l'arrière
-  if (indiceGauch2 >= 30) {
-    Gar1.write((posBaseGar1 - 15) + indiceGauch4); //Gar1 est à sa (posBase+30) pcq elle est à la position avancée. On la rétracte vers sa posBase (-30)
-  } //on retire des degrés à la pos in
-}
-
-
-//Tete
-void HeadUP() {
-  if (posBaseH2 >= 90) {
-    H2.write(posBaseH2);
-    posBaseH2--;
-  }
-  else {
-    H2.write(90);
+  //rotate ++
+  if (indiceDroit2 >= 30) {
+    Gm1.write((posBaseGm1-30) + indiceDroit4);  //Dm1 est à sa (posBase-30) pcq elle est à la position avancée. On la rétracte vers sa posBase (+30)
   }
 }
-
-void HeadDOWN() {
-  if (posBaseH2 <= 170) {
-    H2.write(posBaseH2);
-    posBaseH2++;
-  }
-  else {
-    H2.write(170);
-  }
-}
-
-void HeadR() {
-  if (posBaseH1 <= 180) {
-    H1.write(posBaseH1);
-    posBaseH1++;
-  }
-  else {
-    H1.write(180);
-  }
-}
-
-void HeadL() {
-  if (posBaseH1 >= 60) {
-    H1.write(posBaseH1);
-    posBaseH1--;
-  }
-  else {
-    H1.write(60);
-  }
-}
-
-void Mandibules() {
-  if (indiceM <= 100) {
-    H3.write(posBaseH3 ++);
-    indiceM ++;
-  }
-  
-  if ((100 <= indiceM) && (indiceM <= 200)) {
-    H3.write(posBaseH3 --);
-    indiceM++;
-  }
-  
-  if (indiceM == 200){
-    indiceM = 0;
-  }
-}
-
-void prepareAttack()
-{
-  if (indiceprepAttack <= 15 )
-  {
-    //Gav
-    Gav3.write(posBaseGav3 + indiceprepAttack); 
-    Gav2.write(posBaseGav2 + indiceprepAttack);
-
-    //Gar
-    Gar3.write(posBaseGar3 + indiceprepAttack);
-    Gar2.write(posBaseGar2 + indiceprepAttack);
-
-    //Tete
-    H3.write(posBaseH3 - indiceprepAttack );
-    H2.write(posBaseH2 - indiceprepAttack);
-
-    indiceprepAttack++;
-  }
-
-  if (indiceprepAttack <=40)
-  {
-    Dm1.write(posBaseDm1 - indiceprepAttack);
-    Gav1.write(posBaseGav1 + indiceprepAttack);
-    Gar1.write(posBaseGar1 + indiceprepAttack);
-    indiceprepAttack++;
-  }
-
-  
-}
-
-void Attack()
-{
-    if (indiceAttack <=10)
-    {
-      //Gav
-      Gav3.write(posBaseGav3 - indiceAttack * 3);
-      Gav2.write(posBaseGav2 - indiceAttack * 2);
-
-      //Gar
-      Gar3.write(posBaseGar3 - indiceAttack * 2);
-      Gar2.write(posBaseGav2 - indiceAttack * 2);
-
-      //Tete
-      H2.write(posBaseH2 + indiceAttack * 2);
-      H3.write(posBaseH3 + indiceAttack * 3);
-      indiceAttack++;
-    }
-
-    if (indiceAttack <=16)
-    {
-      Dm1.write(posBaseDm1 + indiceAttack * 3);
-      Gav1.write(posBaseGav1 - indiceAttack * 3);
-      Gar1.write(posBaseGar1 - indiceAttack * 2);
-      indiceAttack ++;      
-    }    
-}
-
-void pos0G(){
-  Gav1.write(posBaseGav1);
-  Gav2.write(posBaseGav2);
-  Gav3.write(posBaseGav3);
-  Gar1.write(posBaseGar1);
-  Gar2.write(posBaseGar2);
-  Gar3.write(posBaseGar3);
-  Dm1.write(posBaseDm1);
-  Dm2.write(posBaseDm2);
-  Dm3.write(posBaseDm3);
+void pos0D(){
+  Dav1.write(posBaseDav1);
+  Dav2.write(posBaseDav2);
+  Dav3.write(posBaseDav3);
+  Dar1.write(posBaseDar1);
+  Dar2.write(posBaseDar2);
+  Dar3.write(posBaseDar3);
+  Gm1.write(posBaseGm1);
+  Gm2.write(posBaseGm2);
+  Gm3.write(posBaseGm3);
 }
