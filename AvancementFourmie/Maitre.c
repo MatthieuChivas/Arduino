@@ -93,20 +93,6 @@ int posBaseH1 = 135; // 0 côté vert, max 180, min 60 => gauche droite
 int posBaseH2 = 120; //0 en haut, max 90 et min 170 => haut bas
 int posBaseH3 = 50; // max 100, ouvertes min 0 fermées
 
-//indices pour position tete
-int posBaseH1 = 135; // 0 côté vert, max 180, min 60 => gauche droite
-int posBaseH2 = 120; //0 en haut, max 90 et min 170 => haut bas
-int posBaseH3 = 50; // max 100, ouvertes min 0 fermées
-
-
-//indices pour position tete
-int posBaseH1 = 135; // 0 côté vert, max 180, min 60 => gauche droite
-int posBaseH2 = 120; //0 en haut, max 90 et min 170 => haut bas
-int posBaseH3 = 50; // max 100, ouvertes min 0 fermées
-
-//-------------------------Variables Temporaires ci-dessous------------------------
-
-
 //-------------------------Variables Temporaires ci-dessous------------------------
 
 void setup() {
