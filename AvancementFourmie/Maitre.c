@@ -7,7 +7,9 @@
 
 BluetoothSerial SerialBT;
 const String deviceName = "FourmiLOL";
-String bluetoothSendMsgStr;
+String blueetoothSendMsgStr;
+char blueetoothSendMsgChar[4];
+int blueetoothSendMsg;
 
 
 //setup le port 2 comme maitre (envoyer des informations)
@@ -167,22 +169,24 @@ void setup() {
 void loop() {
     //---------------- Reception Bluetooth -----------
   if (SerialBT.available()) {
-    bluetoothSendMsgStr = SerialBT.readStringUntil(';');
-    bluetoothSendMsg.trim();
+    blueetoothSendMsgStr = SerialBT.readStringUntil(';');
+    blueetoothSendMsgStr.toCharArray(blueetoothSendMsgChar, 4);
+    //blueetoothSendMsg.trim();
     SerialBT.print("Bluetooth : ");
-    SerialBT.println(bluetoothSendMsgStr);
+    SerialBT.println(blueetoothSendMsgStr);
+    blueetoothSendMsg = atoi(blueetoothSendMsgChar);
     
-    /*if (bluetoothSendMsgStr!=0){
+    if (blueetoothSendMsg!=0){ // si la variable est différente de 0
       SerialBT.println("Conversion OK");
     }
     else {  
       SerialBT.println("Conversion Pas OK :(");
-    }*/
+    }
   }
 
     //------------- Mouvement du corps --------------
 //Avancer
-  if (bluetoothSendMsgStr[2] == 1) {
+  if (traduireUnite(blueetoothSendMsg) == 1) {
     if (!avancerD) {
       avancerG();
     } else {      
@@ -193,7 +197,7 @@ void loop() {
   }
 
 //Reculer
-  else if (bluetoothSendMsgStr[2] == 2){
+  if (traduireUnite(blueetoothSendMsg) == 2){
 
     if (!reculerD) { 
       reculerG();
@@ -202,19 +206,8 @@ void loop() {
       reculerG();
     }
   }
-
-//Gauche
-  else if (bluetoothSendMsgStr[2] == 3){
-    if (!gaucheD) { 
-      gaucheG();
-    } else { 
-      Maitre.print("3;");     
-      gaucheG();
-    }
-  }
-  
-  //Droite
-  else if (bluetoothSendMsgStr[2] == 4){
+//Droite
+  if (traduireUnite(blueetoothSendMsg) == 4){
     if (!droiteD) { 
       droiteG();
     } else { 
@@ -222,52 +215,65 @@ void loop() {
       droiteG();
     }
   }
-  
-  //Position 0
-  else if (bluetoothSendMsgStr[2] == 0){
-    pos0G();
-    Maitre.print("0;");
+//Gauche
+  if (traduireUnite(blueetoothSendMsg) == 3){
+    if (!gaucheD) { 
+      gaucheG();
+    } else { 
+      Maitre.print("3;");     
+      gaucheG();
+    }
   }
 
+//Position 0
+  if (traduireUnite(blueetoothSendMsg) == 5){
+    pos0G();
+    Maitre.print("5;");
+  }
+  
     //-------------- Tête --------------------
 //Haute
-  if (bluetoothSendMsgStr[1] == 1) {
+  if (traduireDizaine(blueetoothSendMsg) == 1) {
     HeadUP();
     SerialBT.println("Tête haute");
   }
 //Basse
-  else if (bluetoothSendMsgStr[1] == 2) {
+  if (traduireDizaine(blueetoothSendMsg) == 2) {
     HeadDOWN();
     SerialBT.println("Tête basse");
   }
 //Droite
-   else if (bluetoothSendMsgStr[1] == 4) {
+  if (traduireDizaine(blueetoothSendMsg) == 4) {
     HeadR();
     SerialBT.println("Tête droite");
   }
 //Gauche
-  else if (bluetoothSendMsgStr[1] == 3) {
+  if (traduireDizaine(blueetoothSendMsg) == 3) {
     HeadL();
     SerialBT.println("Tête gauche");
   }
 //Pour l'instant je touche pas aux mandibules car normalement il y a deux fonctions fermé et ouverte?
-  else if (bluetoothSendMsgStr[1] == 5) {
+  if (traduireDizaine(blueetoothSendMsg) == 5) {
     Mandibules();
     SerialBT.println("Mandibules");
   }
   
 
     //---------- Fonctionnalité ------------
-    if(bluetoothSendMsgStr[0] == 1){
-        SerialBT.println("Jauuuuune");
+    if(traduireCentaine(blueetoothSendMsg) == 1){
+        //SerialBT.println("Jauuuuune");
+        AttackG();
+        SerialBT.println("100");
     }
-    else if(bluetoothSendMsgStr[0] == 2){
-        SerialBT.println("Vert");
+    if(traduireCentaine(blueetoothSendMsg) == 2){
+        //SerialBT.println("Vert");
+        prepareAttackG();
+        SerialBT.println("200");
     }
-    else if(bluetoothSendMsgStr[0] == 3){
+    if(traduireCentaine(blueetoothSendMsg) == 3){
         SerialBT.println("Rouge");
     }
-    else if(bluetoothSendMsgStr[0] == 4){
+    if(traduireCentaine(blueetoothSendMsg) == 4){
         SerialBT.println("Blanc");
     }
   
@@ -645,3 +651,33 @@ void pos0G(){
   Dm2.write(posBaseDm2);
   Dm3.write(posBaseDm3);
 }
+
+//Boutton
+int traduireCentaine(int numberCommand){
+    int centaine=numberCommand/100;
+    centaine=centaine%10;
+    return(centaine);
+}
+
+//Tete
+int traduireDizaine(int numberCommand){
+    int dizaine=numberCommand/10;
+    dizaine=dizaine%10;
+    return(dizaine);
+}
+
+//Corps
+int traduireUnite(int numberCommand){
+    int unite = numberCommand%10;
+    return(unite);
+}
+
+void AttackG(){
+  
+}
+
+void prepareAttackG(){
+  
+}
+
+ 
