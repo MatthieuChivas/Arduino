@@ -112,29 +112,40 @@ void loop() {
     recu = Esclave.readStringUntil(';');
     Serial.println(recu);
   
-    if(recu == "1"){
+    if(recu=="1"){
+      //Serial.println("j'avance");
       moveLegDav();
       moveLegDar();
       moveLegGm();
     }
-    else if(recu == "2"){
+    else if(recu=="2"){
+      //Serial.println("je recule");
       moveRevLegDav(); 
       moveRevLegDar(); 
       moveRevLegGm();
     }
-    else if(recu == "3"){
-      moveLegDav(); 
-      moveLegDar(); 
-      moveGLegGm();
-    }
-    else if(recu == "4"){
+    else if(recu=="4"){
+      //Serial.println("je tourne a droite");
       moveDLegDav(); 
       moveLegGm();
       moveDLegDar();
     }
-    else if(recu == "0"){
+    else if(recu=="3"){
+      //Serial.println("je tourne a gauche");
+      moveLegDav(); 
+      moveLegDar(); 
+      moveGLegGm();
+    }
+    else if(recu=="5"){
+      Serial.println("je me replace");
       pos0D();
-      }
+    }
+    else if(recu=="100"){
+      AttackD();
+    }
+    else if(recu=="200"){
+     prepareAttackD();
+    }
     delay(vitesse);
   }
 
@@ -388,6 +399,7 @@ void moveRevLegGm() {
     Gm1.write((posBaseGm1-30) + indiceDroit4);  //Dm1 est à sa (posBase-30) pcq elle est à la position avancée. On la rétracte vers sa posBase (+30)
   }
 }
+
 void pos0D(){
   Dav1.write(posBaseDav1);
   Dav2.write(posBaseDav2);
@@ -398,4 +410,12 @@ void pos0D(){
   Gm1.write(posBaseGm1);
   Gm2.write(posBaseGm2);
   Gm3.write(posBaseGm3);
+}
+
+void AttackD(){
+  
+}
+
+void prepareAttackD(){
+  
 }
