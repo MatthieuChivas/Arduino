@@ -672,12 +672,61 @@ int traduireUnite(int numberCommand){
     return(unite);
 }
 
-void AttackG(){
+void prepareAttack()
+{
+  if (indiceprepAttack <= 15 )
+  {
+    //Gav
+    Gav3.write(posBaseGav3 + indiceprepAttack); 
+    Gav2.write(posBaseGav2 + indiceprepAttack);
+
+    //Gar
+    Gar3.write(posBaseGar3 + indiceprepAttack);
+    Gar2.write(posBaseGar2 + indiceprepAttack);
+
+    //Tete
+    H3.write(posBaseH3 - indiceprepAttack );
+    H2.write(posBaseH2 - indiceprepAttack);
+
+    indiceprepAttack++;
+  }
+
+  if (indiceprepAttack <=40)
+  {
+    Dm1.write(posBaseDm1 - indiceprepAttack);
+    Gav1.write(posBaseGav1 + indiceprepAttack);
+    Gar1.write(posBaseGar1 + indiceprepAttack);
+    indiceprepAttack++;
+  }
+
   
 }
 
-void prepareAttackG(){
-  
+void Attack()
+{
+    if (indiceAttack <=10)
+    {
+      //Gav
+      Gav3.write(posBaseGav3 - indiceAttack * 3);
+      Gav2.write(posBaseGav2 - indiceAttack * 2);
+
+      //Gar
+      Gar3.write(posBaseGar3 - indiceAttack * 2);
+      Gar2.write(posBaseGav2 - indiceAttack * 2);
+
+      //Tete
+      H2.write(posBaseH2 + indiceAttack * 2);
+      H3.write(posBaseH3 + indiceAttack * 3);
+      indiceAttack++;
+    }
+
+    if (indiceAttack <=16)
+    {
+      Dm1.write(posBaseDm1 + indiceAttack * 3);
+      Gav1.write(posBaseGav1 - indiceAttack * 3);
+      Gar1.write(posBaseGar1 - indiceAttack * 2);
+      indiceAttack ++;      
+    }    
 }
 
  
